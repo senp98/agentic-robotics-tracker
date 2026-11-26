@@ -31,6 +31,8 @@ h1{font:600 34px/1.15 var(--serif);letter-spacing:-.01em;margin:0}
 .asof{grid-column:2;grid-row:1 / span 2;text-align:right;color:var(--pencil);font-size:13px;margin:0}
 .asof span,.asof a{display:block;margin-top:2px}
 .asof .mode{color:var(--graphite);font-weight:600}
+.lnk{border:0;background:none;padding:0;color:inherit;text-decoration:underline;cursor:pointer}
+.asof .lnk{display:block;margin:2px 0 0 auto}
 
 /* one square per item */
 .field{container-type:inline-size;padding:6px 0 30px}
@@ -56,7 +58,18 @@ h1{font:600 34px/1.15 var(--serif);letter-spacing:-.01em;margin:0}
 .mo-l i{font-style:normal}
 
 /* facets: the statistics are the filters */
-.facets{display:grid;grid-template-columns:repeat(4,1fr);gap:8px 40px;padding:22px 0 8px;border-top:1px solid var(--line)}
+.stats{border-top:1px solid var(--line);padding-top:18px}
+.plan{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding-bottom:18px}
+.plan:empty{display:none}
+.plan h2{font:600 13px/1.4 var(--sans);margin:0 6px 0 0}
+.pb{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:4px;background:var(--paper);padding:4px 8px;cursor:pointer;font-size:13px;line-height:1.5;white-space:nowrap}
+.pb .trk{width:32px;height:8px;border-radius:2px;background:#c9ced6;overflow:hidden}
+.pb .fil{display:block;height:100%;background:var(--marker);box-shadow:inset 0 0 0 1px var(--marker-edge)}
+.pb .n{color:var(--pencil)}
+.pb:hover{border-color:#8d96a3}
+.pb[aria-pressed=true]{border-color:var(--graphite);box-shadow:inset 0 0 0 1px var(--graphite)}
+.pb[aria-pressed=true] .lab{font-weight:600}
+.facets{display:grid;grid-template-columns:repeat(4,1fr);gap:8px 40px;padding:0 0 8px}
 .facet h2{font:600 13px/1.4 var(--sans);margin:0 0 6px}
 .fr{display:grid;grid-template-columns:minmax(0,7.6em) 1fr 2.6em;gap:8px;align-items:center;width:100%;padding:1px 0;border:0;background:none;text-align:left;cursor:pointer;font-size:13px;line-height:1.5}
 .fr .lab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -96,10 +109,13 @@ h1{font:600 34px/1.15 var(--serif);letter-spacing:-.01em;margin:0}
 .grp span{font-weight:400;color:var(--pencil);font-size:13px}
 .row{padding:9px 0;border-radius:4px}
 .row:hover{background:var(--mist);box-shadow:-10px 0 0 var(--mist),10px 0 0 var(--mist)}
-.mark{display:block;width:12px;height:12px;margin-top:6px;border:0;padding:0;border-radius:2px;background:var(--unread)}
-button.mark{cursor:pointer}
+.mark{display:block;position:relative;width:14px;height:14px;margin-top:5px;border:0;padding:0;border-radius:3px;background:var(--unread);cursor:pointer}
 .st1 .mark{background:var(--graphite)}
 .st2 .mark{background:var(--marker);box-shadow:inset 0 0 0 1px var(--marker-edge)}
+.mark::after{content:"";position:absolute;left:4.6px;top:1.6px;width:3px;height:7px;border:solid transparent;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.st2 .mark::after{border-color:var(--graphite)}
+.st0 .mark:hover::after{border-color:#8d96a3}
+.st1 .mark:hover::after{border-color:#fff}
 .row time{color:var(--pencil);font-size:13px;padding-top:3px}
 .ttl{font:400 17px/1.35 var(--serif);text-decoration:none;text-wrap:pretty}
 .ttl:hover{text-decoration:underline;text-underline-offset:3px}
@@ -111,6 +127,7 @@ button.mark{cursor:pointer}
 .row:hover .tg{background:#e9ecf0}
 .tg.u{background:none;box-shadow:inset 0 0 0 1px #c3c9d1;color:var(--graphite)}
 .tg.v{background:none;padding:0;color:var(--graphite);font-weight:600}
+.tg.bt,.row:hover .tg.bt{background:none;box-shadow:inset 0 0 0 1px var(--graphite);color:var(--graphite);font-weight:600}
 .num{text-align:right;padding-top:4px;font-size:14px}
 .num.z{color:#aab1bb}
 .more{width:28px;height:28px;border:0;background:none;border-radius:4px;cursor:pointer;color:var(--pencil);padding:0}
@@ -128,6 +145,18 @@ button.mark{cursor:pointer}
 .note textarea{min-height:76px;resize:vertical}
 .note .txt{white-space:pre-wrap;overflow-wrap:anywhere}
 .hint{margin:5px 0 0;font-size:12.5px;color:var(--pencil)}
+.note .act{display:flex;gap:12px;align-items:center;margin-top:8px}
+.note .act .hint{margin:0}
+.btn{height:32px;padding:0 14px;border:1px solid var(--line);border-radius:4px;background:var(--paper);cursor:pointer;white-space:nowrap}
+.btn.pri{background:var(--graphite);border-color:var(--graphite);color:#fff}
+dialog{border:0;border-radius:8px;padding:24px 26px 20px;width:min(480px,calc(100% - 32px));color:var(--graphite);box-shadow:0 12px 40px rgba(35,39,46,.28)}
+dialog::backdrop{background:rgba(35,39,46,.35)}
+dialog h2{font:600 21px/1.3 var(--serif);margin:0 0 10px}
+dialog p,dialog ol{margin:0 0 10px;font-size:14px}
+dialog ol{padding-left:1.4em}
+dialog input{display:block;width:100%;height:36px;padding:0 10px;border:1px solid var(--line);border-radius:4px}
+dialog .row2{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+dialog .err{color:#a1260d;font-size:13px;min-height:1.4em;margin:8px 0 0}
 .abs{font:400 15px/1.6 var(--serif);margin:14px 0 0}
 .facts{margin:12px 0 0;display:grid;grid-template-columns:5.2em 1fr;gap:3px 12px;font-size:13px}
 .facts dt{color:var(--pencil)}
@@ -139,6 +168,8 @@ button.mark{cursor:pointer}
 .foot p{margin:0 0 6px}
 #tip{position:fixed;z-index:9;pointer-events:none;max-width:340px;background:var(--graphite);color:#fff;border-radius:4px;padding:8px 10px;font-size:12.5px;line-height:1.45;display:none}
 #tip b{display:block;font:400 14px/1.35 var(--serif);margin-bottom:2px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9;width:max-content;max-width:min(560px,calc(100% - 32px));background:var(--graphite);color:#fff;border-radius:4px;padding:9px 14px;font-size:13.5px;display:none}
+#toast.bad{background:#a1260d}
 .flash{animation:flash 1.4s}
 @keyframes flash{from{box-shadow:-10px 0 0 var(--marker-wash),10px 0 0 var(--marker-wash);background:var(--marker-wash)}}
 
@@ -148,7 +179,7 @@ button.mark{cursor:pointer}
   .top{grid-template-columns:1fr;padding-top:28px}
   h1{font-size:27px}
   .asof{grid-column:1;grid-row:auto;text-align:left}
-  .asof span,.asof a{display:inline;margin:0 0 0 12px}
+  .asof span,.asof a,.asof .lnk{display:inline;margin:0 0 0 12px}
   .bar{position:static}
   .head,.row{grid-template-columns:14px minmax(0,1fr) 4.6em 24px;column-gap:10px}
   .head span:nth-child(2),.row time,.head .s2,.head .gh,.num.s2,.num.gh{display:none}
@@ -171,7 +202,10 @@ button.mark{cursor:pointer}
     <div class="cols" id="cols"></div>
   </section>
 
-  <section class="facets" id="facets" aria-label="统计与筛选"></section>
+  <div class="stats">
+    <section class="plan" id="plan" aria-label="精读清单"></section>
+    <section class="facets" id="facets" aria-label="统计与筛选"></section>
+  </div>
   <p class="fnote">四项统计随下方筛选实时变化，点任意一行可以筛选。方向按标题和摘要的关键词标注，机型、基准、模型按正文关键词标注，可能有误。</p>
 </div>
 
@@ -200,6 +234,24 @@ button.mark{cursor:pointer}
   </footer>
 </div>
 <div id="tip" role="tooltip"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<dialog id="dlg" aria-labelledby="dlg-h">
+  <form method="dialog" id="dlg-form">
+    <h2 id="dlg-h">在这个页面上直接编辑</h2>
+    <p>填一个 GitHub token 之后，在这里勾选已读、改状态、写批注，都会直接提交到仓库 <b id="dlg-repo"></b>。token 只保存在这台设备的这个浏览器里。</p>
+    <ol>
+      <li><a id="dlg-new" target="_blank" rel="noopener">在 GitHub 新建一个 fine-grained token</a></li>
+      <li>Repository access 选 Only select repositories，只勾这一个仓库</li>
+      <li>权限只需要 Contents：Read and write</li>
+    </ol>
+    <input id="dlg-token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" aria-label="GitHub token">
+    <p class="err" id="dlg-err" role="alert"></p>
+    <div class="row2">
+      <button type="button" class="btn" id="dlg-cancel">取消</button>
+      <button type="submit" class="btn pri" id="dlg-ok">开启编辑</button>
+    </div>
+  </form>
+</dialog>
 
 <script src="data.js"></script>
 <script>
@@ -210,9 +262,15 @@ if (!window.TRACKER_DATA) {
 const D = window.TRACKER_DATA;
 const I = D.items, byId = Object.fromEntries(I.map(x => [x.i, x]));
 const ST = ['未读', '待读', '已读'], STK = ['unread', 'queue', 'read'];
-const S = {q: '', view: 'all', sort: 'date', f: {g: new Set(), u: new Set(), b: new Set(), m: new Set()}, open: null, pin: null};
-let EDIT = false;                 // 只有用 scripts/serve.py 在本地打开时才能改状态和批注
-const HINT = {}, timers = {};
+const S = {q: '', view: 'all', sort: 'date', f: {g: new Set(), u: new Set(), b: new Set(), m: new Set()}, bt: new Set(), open: null, pin: null};
+// 编辑有两种方式：'local' 是用 scripts/serve.py 在本机打开，改动写进 notes/；
+// 'gh' 是在浏览器里存了 token，改动通过 GitHub API 直接提交。都没有就是只读。
+let EDIT = null, TOKEN = null;
+const HINT = {}, timers = {}, busy = {}, again = {};
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} },
+};
 const FAC = [
   {k: 'g', name: '方向', vals: D.tags.map((t, i) => [i, t]), top: 12},
   {k: 'u', name: '宇树机型', vals: D.uni.map(t => [t, t]), top: 9, keepZero: true},
@@ -224,9 +282,6 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', 
 const fmt = v => v == null ? '—' : v.toLocaleString('en-US');
 const href = x => x.k === 'p' ? 'https://www.alphaxiv.org/abs/' + x.i : x.l;
 const gh = D.repo ? 'https://github.com/' + D.repo : '';
-const editUrl = x => x.nf
-  ? `${gh}/edit/${D.branch}/notes/${x.i}.md`
-  : `${gh}/new/${D.branch}?filename=${encodeURIComponent('notes/' + x.i + '.md')}&value=${encodeURIComponent('---\nstatus: queue\n---\n')}`;
 
 /* 图上显示最近 12 个月，各占一列；更早的合成一列 */
 const MONTHS = (() => {
@@ -237,6 +292,7 @@ const MONTHS = (() => {
 const colOf = x => { const k = x.d.slice(0, 7); return k < MONTHS[0] ? 'old' : k > MONTHS[11] ? MONTHS[11] : k; };
 
 function match(x) {
+  if (S.bt.size && !S.bt.has(x.bt)) return false;
   // 刚改过状态的那一条先留在当前视图里，免得写批注写到一半它从列表里消失
   if (S.view === 'queue' && x.st !== 1 && x.i !== S.pin) return false;
   if (S.view === 'read' && x.st !== 2 && x.i !== S.pin) return false;
@@ -275,6 +331,15 @@ function paintChart(set) {
   $('cols').classList.toggle('filtered', set.size < I.length);
 }
 
+/* ---------- reading plan ---------- */
+function paintPlan() {
+  $('plan').innerHTML = !D.bat.length ? '' : '<h2>精读清单</h2>' + D.bat.map(b => {
+    const all = I.filter(x => x.bt === b), read = all.filter(x => x.st === 2).length;
+    return `<button class="pb" data-b="${esc(b)}" aria-pressed="${S.bt.has(b)}" title="已读 ${read} 篇，共 ${all.length} 篇">` +
+      `<span class="lab">${esc(b)}</span><span class="trk"><span class="fil" style="width:${(100 * read / Math.max(1, all.length)).toFixed(1)}%"></span></span><span class="n">${read}/${all.length}</span></button>`;
+  }).join('');
+}
+
 /* ---------- facets ---------- */
 function paintFacets(list) {
   $('facets').innerHTML = FAC.map(F => {
@@ -298,31 +363,30 @@ function paintFacets(list) {
 
 /* ---------- list ---------- */
 function noteHtml(x) {
-  if (EDIT) {
-    return `<div class="pick" role="group" aria-label="状态"><span>状态</span>` +
-      ST.map((s, k) => `<button data-act="set" data-st="${k}" class="${k === 2 ? 'y' : ''}" aria-pressed="${x.st === k}">${s}</button>`).join('') + `</div>` +
-      `<div class="note"><label for="n-${esc(x.i)}">批注</label><textarea id="n-${esc(x.i)}" data-act="note" placeholder="写下这篇的结论、疑点和下一步。">${esc(x.nt)}</textarea>` +
-      `<p class="hint" id="h-${esc(x.i)}">${esc(HINT[x.i] || '自动保存到 notes/' + x.i + '.md')}</p></div>`;
+  if (!EDIT) {
+    return `<div class="pick"><span>状态</span><b>${ST[x.st]}</b></div>` +
+      (x.nt ? `<div class="note"><div class="lbl">批注</div><div class="txt">${esc(x.nt)}</div></div>` : '') +
+      (gh ? `<p class="hint">${x.nt ? '' : '还没有批注。'}<button class="lnk" data-act="setup">开启编辑</button>后可以直接在这里改。</p>` : '');
   }
-  return `<div class="pick"><span>状态</span><b>${ST[x.st]}</b></div>` +
-    (x.nt ? `<div class="note"><div class="lbl">批注</div><div class="txt">${esc(x.nt)}</div></div>` : '') +
-    (gh ? `<p class="hint">${x.nt ? '' : '还没有批注。'}<a href="${esc(editUrl(x))}" target="_blank" rel="noopener">在 GitHub 上${x.nf ? '编辑' : '写'}批注</a></p>` : '');
+  const idle = EDIT === 'gh' ? '点保存后提交到 GitHub，也可以按 Ctrl/⌘ + Enter' : '自动保存到 notes/' + x.i + '.md';
+  return `<div class="pick" role="group" aria-label="状态"><span>状态</span>` +
+    ST.map((s, k) => `<button data-act="set" data-st="${k}" class="${k === 2 ? 'y' : ''}" aria-pressed="${x.st === k}">${s}</button>`).join('') + `</div>` +
+    `<div class="note"><label for="n-${esc(x.i)}">批注</label><textarea id="n-${esc(x.i)}" data-act="note" placeholder="写下这篇的结论、疑点和下一步。">${esc(x.nt)}</textarea>` +
+    `<div class="act">${EDIT === 'gh' ? '<button class="btn" data-act="savenote">保存批注</button>' : ''}<p class="hint" id="h-${esc(x.i)}">${esc(HINT[x.i] || idle)}</p></div></div>`;
 }
 function rowHtml(x) {
   const open = S.open === x.i;
   const who = x.k === 'b' ? x.a : (x.n > 1 ? `${x.a} 等 ${x.n} 人` : x.a);
   const tags = x.g.map(g => `<span class="tg">${esc(D.tags[g])}</span>`).join('') + x.u.map(u => `<span class="tg u">${esc(u)}</span>`).join('');
   let h = `<article class="row st${x.st}${open ? ' open' : ''}" id="r-${esc(x.i)}" data-i="${esc(x.i)}">` +
-    (EDIT ? `<button class="mark" data-act="cycle" aria-label="状态：${ST[x.st]}。点击切换" title="${ST[x.st]}，点击切换"></button>`
-          : `<span class="mark" role="img" aria-label="${ST[x.st]}" title="${ST[x.st]}"></span>`) +
+    `<button class="mark" data-act="check" role="checkbox" aria-checked="${x.st === 2}" aria-label="${esc(x.t)}：${ST[x.st]}" title="${x.st === 2 ? '已读，点一下取消' : ST[x.st] + '，点一下标为已读'}"></button>` +
     `<time>${x.d}</time>` +
     `<div><a class="ttl" href="${esc(href(x))}" target="_blank" rel="noopener" title="${x.k === 'p' ? '在 alphaXiv 打开' : '打开原文'}">${esc(x.t)}</a>` +
-    `<div class="meta"><span class="dt">${x.d}</span><span class="au">${esc(who)}</span>${x.v ? `<span class="tg v">${esc(x.v)}</span>` : ''}${tags}</div></div>` +
+    `<div class="meta"><span class="dt">${x.d}</span><span class="au">${esc(who)}</span>${x.v ? `<span class="tg v">${esc(x.v)}</span>` : ''}${x.bt ? `<span class="tg bt">${esc(x.bt)}</span>` : ''}${tags}</div></div>` +
     `<span class="num${x.c ? '' : ' z'}">${fmt(x.c)}</span><span class="num s2${x.s ? '' : ' z'}">${fmt(x.s)}</span><span class="num gh${x.r ? '' : ' z'}">${fmt(x.r)}</span>` +
     `<button class="more" data-act="toggle" aria-expanded="${open}" aria-label="${open ? '收起详情' : '展开详情'}"></button>`;
   if (open) {
     const facts = [];
-    if (x.bt) facts.push(['精读批次', x.bt]);
     if (x.v) facts.push(['发表去向', x.v]);
     if (x.b.length) facts.push(['基准', x.b.join('、')]);
     if (x.m.length) facts.push(['模型', x.m.join('、')]);
@@ -368,6 +432,7 @@ function paintBar(shown) {
     const lab = F.k === 'g' ? D.tags[v] : v;
     chips.push(`<button class="chip" data-k="${F.k}" data-v="${esc(v)}" aria-label="去掉筛选 ${esc(lab)}">${esc(lab)} ×</button>`);
   }
+  for (const b of S.bt) chips.push(`<button class="chip" data-k="bt" data-v="${esc(b)}" aria-label="去掉筛选 ${esc(b)}">${esc(b)} ×</button>`);
   $('active').innerHTML = (chips.length ? chips.join('') + '<button class="clear" data-act="reset">清除筛选</button>' : '') +
     (shown < I.length ? `<span class="cnt">显示 ${shown} 篇，共 ${I.length} 篇</span>` : '');
 }
@@ -376,34 +441,184 @@ function paintHead() {
   const week = I.filter(x => { const d = (asof - new Date(x.d + 'T00:00:00Z')) / 864e5; return d >= 0 && d < 7; }).length;
   const np = I.filter(x => x.k === 'p').length, nb = I.length - np;
   $('lede').innerHTML = `让通用 LLM agent 操作机器人的研究。库里有 <b>${np}</b> 篇论文和 <b>${nb}</b> 篇博客，其中 <b>${week}</b> 篇发布于最近 7 天。每个方格是一篇，按发布月份堆叠，点方格可以定位到它。`;
-  $('asof').innerHTML = `数据更新于 ${esc(D.asof)}` + (EDIT ? '<span class="mode">本地编辑模式，改动自动保存</span>' : '') +
-    (gh ? `<a href="${esc(gh)}" target="_blank" rel="noopener">GitHub 仓库</a>` : '');
+  const mode = EDIT === 'local' ? '本地编辑模式，改动自动保存' : EDIT === 'gh' ? '已开启编辑，改动直接提交到 GitHub' : '';
+  $('asof').innerHTML = `数据更新于 ${esc(D.asof)}` + (mode ? `<span class="mode">${mode}</span>` : '') +
+    (gh ? `<a href="${esc(gh)}" target="_blank" rel="noopener">GitHub 仓库</a>` : '') +
+    (gh && EDIT !== 'local' ? `<button class="lnk" data-act="${EDIT === 'gh' ? 'off' : 'setup'}">${EDIT === 'gh' ? '关闭编辑' : '开启编辑'}</button>` : '');
 }
 function paint() {
   const list = sorted(I.filter(match));
-  paintChart(new Set(list)); paintFacets(list); paintBar(list.length); paintList(list);
+  paintChart(new Set(list)); paintPlan(); paintFacets(list); paintBar(list.length); paintList(list);
   const ta = document.querySelector('.note textarea');
   if (ta) ta.style.height = Math.max(76, ta.scrollHeight + 2) + 'px';
 }
-function reset() { S.q = ''; $('q').value = ''; S.view = 'all'; S.pin = null; for (const k in S.f) S.f[k].clear(); }
+function reset() { S.q = ''; $('q').value = ''; S.view = 'all'; S.pin = null; S.bt.clear(); for (const k in S.f) S.f[k].clear(); }
 function val(k, v) { return k === 'g' ? +v : v; }
 
-/* ---------- saving (local only) ---------- */
+/* ---------- saving ---------- */
+const dirty = new Set();          // 线上编辑时，改了还没提交的批注
+let toastT;
+function toast(msg, bad) {
+  const el = $('toast'); el.textContent = msg; el.className = bad ? 'bad' : ''; el.style.display = 'block';
+  clearTimeout(toastT); toastT = setTimeout(() => { el.style.display = 'none'; }, bad ? 8000 : 2600);
+}
 function hint(x, msg) { HINT[x.i] = msg; const el = $('h-' + x.i); if (el) el.textContent = msg; }
 function save(x, delay) {
   clearTimeout(timers[x.i]);
-  hint(x, '正在保存…');
-  timers[x.i] = setTimeout(() => {
-    fetch('api/note', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id: x.i, status: STK[x.st], note: x.nt})})
-      .then(r => r.json())
-      .then(j => {
-        if (!j.ok) return hint(x, '没有保存：' + j.error);
-        x.nf = (x.st || x.nt || x.bt) ? 1 : 0;
-        hint(x, x.nf ? '已保存到 notes/' + x.i + '.md' : '已保存（这一条没有内容，没有留文件）');
-      })
-      .catch(() => hint(x, '没有保存：本地服务没有响应。确认 serve.py 还在运行。'));
-  }, delay);
+  hint(x, EDIT === 'gh' ? '正在提交到 GitHub…' : '正在保存…');
+  timers[x.i] = setTimeout(() => EDIT === 'gh' ? saveGh(x) : saveLocal(x), delay);
 }
+function saved(x, msg) {
+  x.sv = {st: x.st, nt: x.nt}; dirty.delete(x.i); hint(x, msg);
+  if (EDIT === 'gh') {   // 线上的 data.js 要等重新发布才更新，这段时间先把改动记在浏览器里
+    const p = pending(); p[x.i] = {st: x.st, nt: x.nt, t: Date.now()}; store.set('art-pending', JSON.stringify(p));
+    toast(msg);
+  }
+}
+function failed(x, why) {
+  x.st = x.sv.st;                 // 状态退回上次保存的样子；批注框里的文字留着
+  hint(x, '没有保存：' + why); toast('没有保存：' + why, true); paint();
+}
+function saveLocal(x) {
+  fetch('api/note', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id: x.i, status: STK[x.st], note: x.nt})})
+    .then(r => r.json())
+    .then(j => j.ok ? saved(x, (x.st || x.nt || x.bt) ? '已保存到 notes/' + x.i + '.md' : '已保存（这一条没有内容，没有留文件）') : failed(x, j.error))
+    .catch(() => failed(x, '本地服务没有响应，确认 serve.py 还在运行'));
+}
+
+/* 线上编辑：通过 GitHub API 读、改、写 notes/<编号>.md。
+   批注文件的格式要和 scripts/tracker.py 里的 read_note / write_note 保持一致。 */
+function parseNote(txt) {
+  const n = {status: 'unread', batch: '', topics: [], extra: [], body: ''};
+  txt = txt.replace(/\r\n/g, '\n');
+  let body = txt;
+  if (txt.startsWith('---\n')) {
+    const end = txt.indexOf('\n---', 3);
+    if (end > 0) {
+      for (const line of txt.slice(4, end).split('\n')) {
+        const c = line.indexOf(':'); if (c < 0) continue;
+        const k = line.slice(0, c).trim(), v = line.slice(c + 1).trim();
+        if (k === 'status') n.status = STK.includes(v) ? v : 'unread';
+        else if (k === 'batch') n.batch = v;
+        else if (k === 'topics') n.topics = v.replace(/^[\[\]]+|[\[\]]+$/g, '').split(',').map(t => t.trim().replace(/^["']+|["']+$/g, '')).filter(Boolean);
+        else n.extra.push([k, v]);
+      }
+      body = txt.slice(end + 4);
+    }
+  }
+  n.body = body.replace(/^\n+|\n+$/g, '');
+  return n;
+}
+function formatNote(n) {
+  const head = ['status: ' + n.status];
+  if (n.batch) head.push('batch: ' + n.batch);
+  if (n.topics.length) head.push('topics: [' + n.topics.join(', ') + ']');
+  for (const [k, v] of n.extra) head.push(k + ': ' + v);
+  return '---\n' + head.join('\n') + '\n---\n' + (n.body ? n.body + '\n' : '');
+}
+const b64e = t => { let o = ''; for (const c of new TextEncoder().encode(t)) o += String.fromCharCode(c); return btoa(o); };
+const b64d = t => new TextDecoder().decode(Uint8Array.from(atob(t.replace(/\s/g, '')), c => c.charCodeAt(0)));
+function ghApi(method, path, body) {
+  const headers = {'Authorization': 'Bearer ' + TOKEN, 'Accept': 'application/vnd.github+json'};
+  if (body) headers['Content-Type'] = 'application/json';
+  return fetch('https://api.github.com/repos/' + D.repo + path, {method, headers, cache: 'no-store', body: body ? JSON.stringify(body) : undefined});
+}
+function ghWhy(r) {
+  if (r.status === 401) return 'token 无效或已过期，关闭编辑后重新开启';
+  if (r.status === 403 || r.status === 404) return '这个 token 不能写这个仓库，检查它的 Repository access 和 Contents 权限';
+  return 'GitHub 返回 ' + r.status;
+}
+// GitHub 的读接口在写入后一两秒内可能还返回旧内容。所以自己刚写过的条目记在 REMOTE 里，
+// 接着再改时直接用它，不重新读；只有第一次改、或者写入冲突时才去读。
+const REMOTE = {};
+async function ghWrite(x, reread) {
+  const path = '/contents/notes/' + encodeURIComponent(x.i) + '.md';
+  let sha = null, cur = null;
+  if (REMOTE[x.i] && !reread) ({sha, cur} = REMOTE[x.i]);
+  else {
+    const g = await ghApi('GET', path + '?ref=' + encodeURIComponent(D.branch) + '&t=' + Date.now());
+    if (g.status === 200) { const j = await g.json(); sha = j.sha; cur = parseNote(b64d(j.content)); }
+    else if (g.status !== 404) return {error: ghWhy(g)};
+  }
+  const n = cur ? Object.assign({}, cur) : {status: 'unread', batch: '', topics: [], extra: [], body: ''};
+  const message = (n.status !== STK[x.st] ? ST[x.st] : '批注') + '：' + x.t.slice(0, 70);
+  n.status = STK[x.st];
+  n.body = x.nt.replace(/\r\n/g, '\n').replace(/^\n+|\n+$/g, '');
+  const empty = n.status === 'unread' && !n.body && !n.batch && !n.topics.length && !n.extra.length;
+  let r;
+  if (empty) {
+    if (!sha) return {ok: true};
+    r = await ghApi('DELETE', path, {message, sha, branch: D.branch});
+  } else {
+    if (cur && formatNote(cur) === formatNote(n)) return {ok: true};
+    r = await ghApi('PUT', path, Object.assign({message, content: b64e(formatNote(n)), branch: D.branch}, sha ? {sha} : {}));
+  }
+  if (r.status === 409 || r.status === 422) return {conflict: true};
+  if (!r.ok) return {error: ghWhy(r)};
+  const j = await r.json().catch(() => ({}));
+  REMOTE[x.i] = empty ? {sha: null, cur: null} : {sha: j.content && j.content.sha, cur: n};
+  if (!empty && !REMOTE[x.i].sha) delete REMOTE[x.i];
+  return {ok: true};
+}
+async function saveGh(x) {
+  if (busy[x.i]) { again[x.i] = true; return; }     // 同一条的提交排队，一次只发一个
+  busy[x.i] = true;
+  let res;
+  try {
+    for (let k = 0; k < 4; k++) {
+      if (k) await new Promise(ok => setTimeout(ok, 700 * k));   // 冲突时等一下再重新读
+      res = await ghWrite(x, k > 0);
+      if (!res.conflict) break;
+    }
+    if (res.conflict) res = {error: '仓库里的这条批注刚被别处改过，刷新页面后再试'};
+  } catch (e) { res = {error: '连不上 GitHub'}; }
+  busy[x.i] = false;
+  if (again[x.i]) { again[x.i] = false; return saveGh(x); }
+  if (res.error) failed(x, res.error); else saved(x, '已提交到 GitHub，线上数据约一分钟后更新');
+}
+function pending() { try { return JSON.parse(store.get('art-pending')) || {}; } catch (e) { return {}; } }
+function applyPending() {
+  const p = pending();
+  for (const id of Object.keys(p)) {
+    const x = byId[id], v = p[id];
+    if (!x || (x.st === v.st && x.nt === v.nt) || Date.now() - v.t > 30 * 60e3) { delete p[id]; continue; }
+    x.st = v.st; x.nt = v.nt;
+  }
+  store.set('art-pending', Object.keys(p).length ? JSON.stringify(p) : null);
+}
+
+/* ---------- turning editing on ---------- */
+function openSetup() {
+  if (!gh) return;
+  $('dlg-repo').textContent = D.repo;
+  $('dlg-new').href = 'https://github.com/settings/personal-access-tokens/new?name=tracker-page&description=' +
+    encodeURIComponent('Edit reading notes from the ' + D.repo + ' page') + '&expires_in=90&contents=write';
+  $('dlg-err').textContent = ''; $('dlg-token').value = '';
+  $('dlg').showModal();
+}
+$('dlg-cancel').addEventListener('click', () => $('dlg').close());
+$('dlg-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const t = $('dlg-token').value.trim();
+  if (!t) { $('dlg-err').textContent = '先把 token 贴进来。'; return; }
+  $('dlg-ok').disabled = true; $('dlg-err').textContent = '正在检查…';
+  try {
+    const r = await fetch('https://api.github.com/repos/' + D.repo, {cache: 'no-store', headers: {'Authorization': 'Bearer ' + t, 'Accept': 'application/vnd.github+json'}})
+      .catch(() => { throw new Error('连不上 GitHub，稍后再试。'); });
+    if (r.status === 401) throw new Error('GitHub 不认这个 token：可能贴错了，或者已经过期。');
+    if (!r.ok) throw new Error('这个 token 看不到仓库 ' + D.repo + '（GitHub 返回 ' + r.status + '）。');
+    TOKEN = t; store.set('art-token', t); EDIT = 'gh'; $('dlg').close(); paintHead(); paint();
+    toast('已开启编辑。点行首的方框可以直接标为已读。');
+  } catch (err) { $('dlg-err').textContent = err.message; }
+  $('dlg-ok').disabled = false;
+});
+$('asof').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  if (b.dataset.act === 'setup') return openSetup();
+  TOKEN = null; store.set('art-token', null); EDIT = null; paintHead(); paint();
+  toast('已关闭编辑，这台设备上的 token 已删除。');
+});
+window.addEventListener('beforeunload', e => { if (dirty.size) { e.preventDefault(); e.returnValue = ''; } });
 
 /* ---------- events ---------- */
 $('facets').addEventListener('click', e => {
@@ -413,28 +628,45 @@ $('facets').addEventListener('click', e => {
 });
 $('active').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
-  if (b.dataset.act === 'reset') reset(); else S.f[b.dataset.k].delete(val(b.dataset.k, b.dataset.v));
+  if (b.dataset.act === 'reset') reset();
+  else if (b.dataset.k === 'bt') S.bt.delete(b.dataset.v);
+  else S.f[b.dataset.k].delete(val(b.dataset.k, b.dataset.v));
   paint();
+});
+$('plan').addEventListener('click', e => {
+  const b = e.target.closest('.pb'); if (!b) return;
+  S.bt.has(b.dataset.b) ? S.bt.delete(b.dataset.b) : S.bt.add(b.dataset.b); S.pin = null; paint();
 });
 $('tabs').addEventListener('click', e => { const b = e.target.closest('.tab'); if (b) { S.view = b.dataset.view; S.pin = null; paint(); } });
 $('q').addEventListener('input', e => { S.q = e.target.value.trim(); S.pin = null; paint(); });
 $('sort').addEventListener('change', e => { S.sort = e.target.value; paint(); });
 $('list').addEventListener('click', e => {
-  const act = e.target.closest('[data-act]');
-  if (act && act.dataset.act === 'reset') { reset(); paint(); return; }
+  const act = e.target.closest('[data-act]'), a = act && act.dataset.act;
+  if (a === 'reset') { reset(); paint(); return; }
+  if (a === 'setup') { openSetup(); return; }
   const row = e.target.closest('.row'); if (!row) return;
   const x = byId[row.dataset.i];
-  if (EDIT && act && (act.dataset.act === 'cycle' || act.dataset.act === 'set')) {
-    x.st = act.dataset.act === 'cycle' ? (x.st + 1) % 3 : +act.dataset.st;
+  if (a === 'check' || a === 'set') {
+    if (!EDIT) { openSetup(); return; }
+    if (a === 'set') x.st = +act.dataset.st;
+    else if (x.st === 2) x.st = x.pv != null ? x.pv : (x.bt ? 1 : 0);   // 取消勾选：回到勾选前的状态
+    else { x.pv = x.st; x.st = 2; }
     S.pin = x.i; save(x, 0); paint(); return;
   }
+  if (a === 'savenote') { save(x, 0); return; }
   if (e.target.closest('a, textarea, .detail')) return;
   S.open = S.open === x.i ? null : x.i; S.pin = null; paint();
 });
 $('list').addEventListener('input', e => {
   if (!EDIT || e.target.dataset.act !== 'note') return;
   const x = byId[e.target.closest('.row').dataset.i];
-  x.nt = e.target.value; save(x, 600);
+  x.nt = e.target.value;
+  if (EDIT === 'local') save(x, 600); else { dirty.add(x.i); hint(x, '有改动还没保存'); }
+});
+$('list').addEventListener('keydown', e => {
+  if (EDIT === 'gh' && e.target.dataset.act === 'note' && e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    e.preventDefault(); save(byId[e.target.closest('.row').dataset.i], 0);
+  }
 });
 const tip = $('tip');
 $('cols').addEventListener('mousemove', e => {
@@ -458,10 +690,14 @@ $('cols').addEventListener('click', e => {
 });
 
 /* ---------- boot ---------- */
+applyPending();
+I.forEach(x => { x.sv = {st: x.st, nt: x.nt}; });
+TOKEN = store.get('art-token');
+if (TOKEN && gh) EDIT = 'gh';
 paintHead(); buildChart(); paint();
 if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
   fetch('api/ping').then(r => r.ok ? r.json() : null)
-    .then(j => { if (j && j.ok) { EDIT = true; paintHead(); paint(); } })
+    .then(j => { if (j && j.ok) { EDIT = 'local'; paintHead(); paint(); } })
     .catch(() => {});
 }
 </script>

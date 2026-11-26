@@ -1,7 +1,15 @@
 {
  "site": {
   "repo": "senp98/agentic-robotics-tracker",
-  "branch": "main"
+  "branch": "main",
+  "batches": [
+   "第一批",
+   "第二批",
+   "人形专项",
+   "评测与安全",
+   "背景与对照",
+   "Anthropic 与观点"
+  ]
  },
  "lookback_days": 21,
  "backtrack_min_citations": 10,

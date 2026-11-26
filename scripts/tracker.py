@@ -286,16 +286,20 @@ def build_data():
             'c': s.get('cited_in_library'), 's': s.get('s2'), 'r': s.get('stars'),
             'p': p.get('repo', ''), 'v': p.get('venue', ''),
             'st': STATUS.index(n.get('status', 'unread')), 'nt': n.get('body', ''), 'bt': n.get('batch', ''),
-            'ft': bool(p.get('fulltext')), 'nf': 1 if note else 0,
+            'ft': bool(p.get('fulltext')),
         }
         if p.get('url'):
             it['l'] = p['url']
         items.append(it)
         asof = max(asof, p.get('added', ''))
     items.sort(key=lambda x: x['d'], reverse=True)
+    # 精读清单的批次：sources.json 里排好的在前，批注文件里新写的批次名排在后面
+    seen = {x['bt'] for x in items if x['bt']}
+    order = site.get('batches', [])
+    batches = [b for b in order if b in seen] + sorted(seen - set(order))
     return {
         'asof': asof, 'repo': site.get('repo', ''), 'branch': site.get('branch', 'main'),
-        'tags': tags, 'uni': [n for n, _ in UNITREE],
+        'bat': batches, 'tags': tags, 'uni': [n for n, _ in UNITREE],
         'ben': [n for n, _ in BENCHMARKS], 'mod': [n for n, _ in MODELS], 'items': items,
     }
 

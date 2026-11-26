@@ -5,10 +5,24 @@
 **页面：<https://senp98.github.io/agentic-robotics-tracker/>**
 
 - 顶部每个方格是一篇，按发布月份堆叠。黄色是读过的，深灰是待读的，浅灰是未读的。
+- "精读清单"是挑出来要精读的几批论文，带已读进度。
 - 方向、宇树机型、基准、模型四组横条既是统计也是筛选，点一行就按它筛选。
 - 论文标题链接到 alphaXiv，博客链接到原文。
 
 ## 读论文、写批注
+
+### 在线上页面直接改
+
+点页面右上角的"开启编辑"，填一个 GitHub token。之后：
+
+- 点行首的方框，这一篇就标为已读；再点一下取消。
+- 展开一行可以改状态（未读、待读、已读）和写批注，写完点"保存批注"。
+
+每次改动是仓库里的一次提交。这台设备上立刻生效；线上数据约一分钟后更新，其他设备那时才看得到。
+
+token 的要求：fine-grained；Repository access 选 Only select repositories，只勾这一个仓库；权限只要 Contents 读写。它只保存在那台设备的那个浏览器里，点"关闭编辑"会删掉。没有填 token 的人看到的页面是只读的。
+
+### 在本机改
 
 ```
 git clone https://github.com/senp98/agentic-robotics-tracker.git
@@ -16,15 +30,17 @@ cd agentic-robotics-tracker
 python3 scripts/serve.py
 ```
 
-浏览器会打开本地页面。这时点行首的小方格可以在未读、待读、已读之间切换；展开一行可以写批注。改动自动保存到 `notes/<编号>.md`。写完后推上去，线上页面一两分钟后更新：
+浏览器会打开本地页面，用法和线上一样，区别是批注边写边自动保存到 `notes/<编号>.md`，不需要 token。写完后推上去：
 
 ```
 git add notes && git commit -m "批注" && git push
 ```
 
-线上页面是只读的。每条下面有"在 GitHub 上编辑批注"的链接，不在自己电脑前时可以直接在网页上改。
+如果也在线上改过，先 `git pull`。需要 Python 3.8 以上，不用装任何依赖。
 
-需要 Python 3.8 以上，不用装任何依赖。
+### 精读清单
+
+页面上"精读清单"那一排是计划要精读的几批论文和各自的已读进度，点一批就只看这一批。一篇论文属于哪一批，写在它的批注文件里（`batch: 第一批`）；各批的显示顺序在 `data/sources.json` 的 `site.batches` 里。
 
 ## 数据怎么更新
 
@@ -61,12 +77,14 @@ GitHub Actions 每周一自动运行 `scripts/update.py`，做三件事：
 ```markdown
 ---
 status: queue
+batch: 第一批
 topics: [代码即策略, 基准与评测]
 ---
 这里写批注，格式随意。
 ```
 
 - `status` 取 `unread`、`queue`、`read`，对应未读、待读、已读。没有批注文件的条目是未读。
+- `batch` 可以不写。写了，这一篇就出现在精读清单的那一批里。
 - `topics` 可以不写。写了就覆盖自动标注的方向，用来纠正标错的条目。
 
 ## 这些数字是什么意思
