@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agentic Robotics 研究追踪</title>
+<meta name="description" content="让通用 LLM agent 操作机器人的研究：论文与博客、阅读状态、批注和方向统计。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='2.5' y='2.5' width='11' height='11' rx='2' fill='%23ffd93b' stroke='%23cfa400'/%3E%3C/svg%3E">
+<style>
+:root{
+  color-scheme:light;
+  --paper:#fff; --mist:#f4f5f7; --line:#e3e6ea; --unread:#d9dde3;
+  --pencil:#68707c; --graphite:#23272e; --marker:#ffd93b; --marker-edge:#cfa400; --marker-wash:#fff6c7;
+  --serif:"Charter","Iowan Old Style","Source Serif 4","Noto Serif","Songti SC","Noto Serif CJK SC","Source Han Serif SC",Georgia,serif;
+  --sans:"Avenir Next","Segoe UI","PingFang SC","Hiragino Sans GB","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--graphite);font:15px/1.5 var(--sans);font-variant-numeric:tabular-nums}
+.wrap{max-width:1120px;margin:0 auto;padding:0 28px}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--graphite);outline-offset:2px;border-radius:2px}
+code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:.92em;background:var(--mist);border-radius:3px;padding:1px 5px}
+
+/* masthead */
+.top{padding:44px 0 26px;display:grid;grid-template-columns:1fr auto;gap:8px 32px;align-items:end}
+h1{font:600 34px/1.15 var(--serif);letter-spacing:-.01em;margin:0}
+.lede{grid-column:1;max-width:62ch;margin:0;color:var(--pencil);text-wrap:balance}
+.lede b{color:var(--graphite);font-weight:600}
+.asof{grid-column:2;grid-row:1 / span 2;text-align:right;color:var(--pencil);font-size:13px;margin:0}
+.asof span,.asof a{display:block;margin-top:2px}
+.asof .mode{color:var(--graphite);font-weight:600}
+
+/* one square per item */
+.field{container-type:inline-size;padding:6px 0 30px}
+.cols{--c:clamp(4px,calc((86.8cqw - 130px)/78),12px);display:flex;align-items:flex-end;justify-content:space-between}
+.mo{display:flex;flex-direction:column}
+.sqs{display:flex;flex-wrap:wrap-reverse;gap:2px;width:calc(6*var(--c) + 10px)}
+.sq{width:var(--c);height:var(--c);border-radius:calc(var(--c)*.17);background:var(--unread);cursor:pointer;animation:pop .35s both;animation-delay:calc(var(--m)*40ms)}
+.sq.s1{background:var(--graphite)}
+.sq.s2{background:var(--marker);box-shadow:inset 0 0 0 1px var(--marker-edge)}
+.filtered .sq.s0{background:#9aa3af}
+.sq.off,.filtered .sq.off{opacity:.16;background:var(--unread)}
+.filtered .sq.s1.off{background:var(--graphite)}
+.filtered .sq.s2.off{background:var(--marker)}
+.sq:hover,.sq.on{outline:2px solid var(--graphite);outline-offset:1px}
+.mo-l{margin-top:8px;font-size:12.5px;color:var(--pencil);white-space:nowrap}
+.mo-l b{display:block;color:var(--graphite);font-weight:600;font-size:13px}
+@keyframes pop{from{opacity:0;transform:scale(.4)}}
+@container (max-width:560px){  /* 窄屏：每列 4 格宽，方格大一些，列高一些 */
+  .cols{--c:clamp(3px,calc((86.8cqw - 39px)/52),12px)}
+  .sqs{gap:1px;width:calc(4*var(--c) + 3px)}
+  .mo-l{font-size:11px}.mo-l b{font-size:11.5px}.mo-l i{display:none}
+}
+.mo-l i{font-style:normal}
+
+/* facets: the statistics are the filters */
+.facets{display:grid;grid-template-columns:repeat(4,1fr);gap:8px 40px;padding:22px 0 8px;border-top:1px solid var(--line)}
+.facet h2{font:600 13px/1.4 var(--sans);margin:0 0 6px}
+.fr{display:grid;grid-template-columns:minmax(0,7.6em) 1fr 2.6em;gap:8px;align-items:center;width:100%;padding:1px 0;border:0;background:none;text-align:left;cursor:pointer;font-size:13px;line-height:1.5}
+.fr .lab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fr .trk{height:8px;border-radius:2px;background:var(--mist);overflow:hidden}
+.fr .fil{display:block;height:100%;background:#bcc3cc;border-radius:2px}
+.fr .n{text-align:right;color:var(--pencil)}
+.fr:hover .fil{background:#8d96a3}
+.fr[aria-pressed=true] .lab{font-weight:600}
+.fr[aria-pressed=true] .fil{background:var(--graphite)}
+.zero{margin:5px 0 0;font-size:12.5px;color:var(--pencil)}
+.fnote{margin:10px 0 22px;font-size:12.5px;color:var(--pencil);max-width:78ch}
+
+/* control bar */
+.bar{position:sticky;top:0;z-index:5;background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 0}
+.bar-in{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.q{flex:1 1 240px;min-width:0;height:34px;padding:0 10px;border:1px solid var(--line);border-radius:4px;background:var(--paper)}
+.q::placeholder{color:#98a0ab}
+.tabs{display:flex;gap:2px;background:var(--mist);border-radius:5px;padding:2px}
+.tab{height:30px;padding:0 11px;border:0;border-radius:4px;background:none;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tab[aria-pressed=true]{background:var(--paper);box-shadow:0 0 0 1px var(--line);font-weight:600}
+.tab .n{color:var(--pencil);font-weight:400}
+.tab i{width:9px;height:9px;border-radius:2px;background:var(--graphite)}
+.tab i.y{background:var(--marker);box-shadow:inset 0 0 0 1px var(--marker-edge)}
+.sort{height:34px;padding:0 8px;border:1px solid var(--line);border-radius:4px;background:var(--paper)}
+.active{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;font-size:13px}
+.active:empty{display:none}
+.chip{border:0;border-radius:3px;background:var(--graphite);color:#fff;padding:2px 8px;cursor:pointer}
+.clear{border:0;background:none;text-decoration:underline;cursor:pointer;color:var(--pencil);padding:2px 4px}
+.cnt{color:var(--pencil);margin-left:auto}
+
+/* list */
+.list{padding:6px 0 60px}
+.head,.row{display:grid;grid-template-columns:16px 6.4em minmax(0,1fr) 4.2em 4.2em 4.2em 28px;column-gap:14px;align-items:start}
+.head{padding:12px 0 6px;font-size:12.5px;color:var(--pencil)}
+.head .r{text-align:right;white-space:nowrap}
+.grp{font:600 14px/1.4 var(--sans);margin:26px 0 4px;display:flex;gap:10px;align-items:baseline}
+.grp span{font-weight:400;color:var(--pencil);font-size:13px}
+.row{padding:9px 0;border-radius:4px}
+.row:hover{background:var(--mist);box-shadow:-10px 0 0 var(--mist),10px 0 0 var(--mist)}
+.mark{display:block;width:12px;height:12px;margin-top:6px;border:0;padding:0;border-radius:2px;background:var(--unread)}
+button.mark{cursor:pointer}
+.st1 .mark{background:var(--graphite)}
+.st2 .mark{background:var(--marker);box-shadow:inset 0 0 0 1px var(--marker-edge)}
+.row time{color:var(--pencil);font-size:13px;padding-top:3px}
+.ttl{font:400 17px/1.35 var(--serif);text-decoration:none;text-wrap:pretty}
+.ttl:hover{text-decoration:underline;text-underline-offset:3px}
+.st2 .ttl{background:linear-gradient(transparent 58%,var(--marker) 58%,var(--marker) 94%,transparent 94%);box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.meta{margin-top:3px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-size:12.5px;color:var(--pencil)}
+.meta .au{margin-right:4px}
+.meta .dt{display:none}
+.tg{background:var(--mist);border-radius:3px;padding:0 6px}
+.row:hover .tg{background:#e9ecf0}
+.tg.u{background:none;box-shadow:inset 0 0 0 1px #c3c9d1;color:var(--graphite)}
+.tg.v{background:none;padding:0;color:var(--graphite);font-weight:600}
+.num{text-align:right;padding-top:4px;font-size:14px}
+.num.z{color:#aab1bb}
+.more{width:28px;height:28px;border:0;background:none;border-radius:4px;cursor:pointer;color:var(--pencil);padding:0}
+.more::before{content:"";display:inline-block;width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg) translate(-2px,-2px)}
+.row.open .more::before{transform:rotate(-135deg) translate(-1px,-1px)}
+.detail{grid-column:3 / -1;padding:12px 0 10px;max-width:70ch}
+.pick{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--pencil)}
+.pick b{color:var(--graphite);font-weight:600}
+.pick button{border:1px solid var(--line);background:var(--paper);border-radius:4px;padding:2px 10px;cursor:pointer;color:var(--graphite)}
+.pick button[aria-pressed=true]{background:var(--graphite);border-color:var(--graphite);color:#fff}
+.pick button.y[aria-pressed=true]{background:var(--marker);border-color:var(--marker-edge);color:var(--graphite)}
+.note{margin:12px 0 0}
+.note label,.note .lbl{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
+.note textarea,.note .txt{display:block;width:100%;padding:9px 11px;border:0;border-left:3px solid var(--marker);border-radius:0 4px 4px 0;background:var(--marker-wash);line-height:1.6}
+.note textarea{min-height:76px;resize:vertical}
+.note .txt{white-space:pre-wrap;overflow-wrap:anywhere}
+.hint{margin:5px 0 0;font-size:12.5px;color:var(--pencil)}
+.abs{font:400 15px/1.6 var(--serif);margin:14px 0 0}
+.facts{margin:12px 0 0;display:grid;grid-template-columns:5.2em 1fr;gap:3px 12px;font-size:13px}
+.facts dt{color:var(--pencil)}
+.facts dd{margin:0}
+.links{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-top:14px;font-size:14px}
+.links .go{background:var(--graphite);color:#fff;text-decoration:none;border-radius:4px;padding:6px 14px}
+.empty{padding:48px 0;color:var(--pencil)}
+.foot{border-top:1px solid var(--line);padding:22px 0 60px;color:var(--pencil);font-size:13px;max-width:78ch}
+.foot p{margin:0 0 6px}
+#tip{position:fixed;z-index:9;pointer-events:none;max-width:340px;background:var(--graphite);color:#fff;border-radius:4px;padding:8px 10px;font-size:12.5px;line-height:1.45;display:none}
+#tip b{display:block;font:400 14px/1.35 var(--serif);margin-bottom:2px}
+.flash{animation:flash 1.4s}
+@keyframes flash{from{box-shadow:-10px 0 0 var(--marker-wash),10px 0 0 var(--marker-wash);background:var(--marker-wash)}}
+
+@media (max-width:900px){.facets{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:720px){
+  .wrap{padding:0 16px}
+  .top{grid-template-columns:1fr;padding-top:28px}
+  h1{font-size:27px}
+  .asof{grid-column:1;grid-row:auto;text-align:left}
+  .asof span,.asof a{display:inline;margin:0 0 0 12px}
+  .bar{position:static}
+  .head,.row{grid-template-columns:14px minmax(0,1fr) 4.6em 24px;column-gap:10px}
+  .head span:nth-child(2),.row time,.head .s2,.head .gh,.num.s2,.num.gh{display:none}
+  .meta .dt{display:inline}
+  .detail{grid-column:2 / -1}
+}
+@media (max-width:520px){.facets{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.sq,.flash{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Agentic Robotics 研究追踪</h1>
+    <p class="lede" id="lede"></p>
+    <p class="asof" id="asof"></p>
+  </header>
+
+  <section class="field" aria-label="按发布月份堆叠的条目">
+    <div class="cols" id="cols"></div>
+  </section>
+
+  <section class="facets" id="facets" aria-label="统计与筛选"></section>
+  <p class="fnote">四项统计随下方筛选实时变化，点任意一行可以筛选。方向按标题和摘要的关键词标注，机型、基准、模型按正文关键词标注，可能有误。</p>
+</div>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="bar-in">
+      <input class="q" id="q" type="search" placeholder="搜索标题、作者或 arXiv 编号" aria-label="搜索">
+      <div class="tabs" id="tabs" role="group" aria-label="视图"></div>
+      <select class="sort" id="sort" aria-label="排序">
+        <option value="date">按日期</option>
+        <option value="c">按库内被引</option>
+        <option value="s">按 S2 被引</option>
+        <option value="r">按 GitHub stars</option>
+      </select>
+    </div>
+    <div class="active" id="active"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <main class="list" id="list"></main>
+  <footer class="foot">
+    <p>论文元数据来自 arXiv。库内被引是这个库里有多少篇论文的参考文献引用了它；S2 被引来自 Semantic Scholar；stars 来自论文的代码仓库。新论文和这些数字每周自动更新一次。</p>
+    <p>标题链接到 alphaXiv，博客链接到原文。新收录的条目一律是未读，是否相关由关键词规则判断，会混进不相关的论文。</p>
+    <p>最初的状态和批注来自 2026 年 11 月的一轮调研：标为待读的论文当时只读过摘要，三篇标为已读的博客通读过原文。</p>
+  </footer>
+</div>
+<div id="tip" role="tooltip"></div>
+
+<script src="data.js"></script>
+<script>
+if (!window.TRACKER_DATA) {
+  document.body.innerHTML = '<p style="padding:40px 28px;max-width:60ch">没有找到 <code>data.js</code>。在仓库目录运行 <code>python3 scripts/serve.py</code>，页面会自动打开。</p>';
+  throw new Error('data.js missing');
+}
+const D = window.TRACKER_DATA;
+const I = D.items, byId = Object.fromEntries(I.map(x => [x.i, x]));
+const ST = ['未读', '待读', '已读'], STK = ['unread', 'queue', 'read'];
+const S = {q: '', view: 'all', sort: 'date', f: {g: new Set(), u: new Set(), b: new Set(), m: new Set()}, open: null, pin: null};
+let EDIT = false;                 // 只有用 scripts/serve.py 在本地打开时才能改状态和批注
+const HINT = {}, timers = {};
+const FAC = [
+  {k: 'g', name: '方向', vals: D.tags.map((t, i) => [i, t]), top: 12},
+  {k: 'u', name: '宇树机型', vals: D.uni.map(t => [t, t]), top: 9, keepZero: true},
+  {k: 'b', name: '基准', vals: D.ben.map(t => [t, t]), top: 8},
+  {k: 'm', name: '模型与 agent 工具', vals: D.mod.map(t => [t, t]), top: 8},
+];
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const fmt = v => v == null ? '—' : v.toLocaleString('en-US');
+const href = x => x.k === 'p' ? 'https://www.alphaxiv.org/abs/' + x.i : x.l;
+const gh = D.repo ? 'https://github.com/' + D.repo : '';
+const editUrl = x => x.nf
+  ? `${gh}/edit/${D.branch}/notes/${x.i}.md`
+  : `${gh}/new/${D.branch}?filename=${encodeURIComponent('notes/' + x.i + '.md')}&value=${encodeURIComponent('---\nstatus: queue\n---\n')}`;
+
+/* 图上显示最近 12 个月，各占一列；更早的合成一列 */
+const MONTHS = (() => {
+  const y = +D.asof.slice(0, 4), m = +D.asof.slice(5, 7), out = [];
+  for (let k = 11; k >= 0; k--) out.push(new Date(Date.UTC(y, m - 1 - k, 1)).toISOString().slice(0, 7));
+  return out;
+})();
+const colOf = x => { const k = x.d.slice(0, 7); return k < MONTHS[0] ? 'old' : k > MONTHS[11] ? MONTHS[11] : k; };
+
+function match(x) {
+  // 刚改过状态的那一条先留在当前视图里，免得写批注写到一半它从列表里消失
+  if (S.view === 'queue' && x.st !== 1 && x.i !== S.pin) return false;
+  if (S.view === 'read' && x.st !== 2 && x.i !== S.pin) return false;
+  if (S.view === 'blog' && x.k !== 'b') return false;
+  for (const k in S.f) for (const v of S.f[k]) if (!x[k].includes(v)) return false;
+  if (S.q) {
+    const q = S.q.toLowerCase();
+    if (!(x.t.toLowerCase().includes(q) || x.a.toLowerCase().includes(q) || x.i.includes(q))) return false;
+  }
+  return true;
+}
+function sorted(a) {
+  const k = S.sort;
+  if (k === 'date') return a.slice().sort((x, y) => x.d < y.d ? 1 : x.d > y.d ? -1 : 0);
+  return a.slice().sort((x, y) => (y[k] ?? -1) - (x[k] ?? -1) || (x.d < y.d ? 1 : -1));
+}
+
+/* ---------- field chart ---------- */
+function buildChart() {
+  const cols = [{key: 'old', label: '更早', title: MONTHS[0] + ' 之前'}]
+    .concat(MONTHS.map(k => ({key: k, label: `${+k.slice(5)}<i> 月</i>`, title: `${k.slice(0, 4)} 年 ${+k.slice(5)} 月`})));
+  $('cols').innerHTML = cols.map((c, ci) => {
+    const items = I.filter(x => colOf(x) === c.key).sort((a, b) => a.d < b.d ? -1 : 1);
+    const sq = items.map(x => `<i class="sq s${x.st}" data-i="${esc(x.i)}" style="--m:${ci}"></i>`).join('');
+    return `<div class="mo" title="${c.title}"><div class="sqs">${sq}</div><div class="mo-l"><b>${c.label}</b><span data-mo="${c.key}">${items.length}</span></div></div>`;
+  }).join('');
+}
+function paintChart(set) {
+  const cnt = {};
+  document.querySelectorAll('.sq').forEach(el => {
+    const x = byId[el.dataset.i], on = set.has(x);
+    el.className = 'sq s' + x.st + (on ? '' : ' off') + (S.open === x.i ? ' on' : '');
+    if (on) cnt[colOf(x)] = (cnt[colOf(x)] || 0) + 1;
+  });
+  document.querySelectorAll('[data-mo]').forEach(el => el.textContent = cnt[el.dataset.mo] || 0);
+  $('cols').classList.toggle('filtered', set.size < I.length);
+}
+
+/* ---------- facets ---------- */
+function paintFacets(list) {
+  $('facets').innerHTML = FAC.map(F => {
+    const n = new Map(F.vals.map(([v]) => [v, 0]));
+    list.forEach(x => x[F.k].forEach(v => n.set(v, (n.get(v) || 0) + 1)));
+    let rows = F.vals.map(([v, lab]) => ({v, lab, n: n.get(v)}));
+    let zero = '';
+    if (F.keepZero) {
+      const z = rows.filter(r => !r.n && !S.f[F.k].has(r.v)).map(r => r.lab);
+      rows = rows.filter(r => r.n || S.f[F.k].has(r.v));
+      if (z.length) zero = `<p class="zero">${esc(z.join('、'))}：0 篇</p>`;
+    } else rows = rows.sort((a, b) => b.n - a.n).filter(r => r.n > 0 || S.f[F.k].has(r.v));
+    rows = rows.slice(0, F.top);
+    const max = Math.max(1, ...rows.map(r => r.n));
+    return `<div class="facet"><h2>${F.name}</h2>` + (rows.length ? rows.map(r =>
+      `<button class="fr" data-k="${F.k}" data-v="${esc(r.v)}" aria-pressed="${S.f[F.k].has(r.v)}">` +
+      `<span class="lab">${esc(r.lab)}</span><span class="trk"><span class="fil" style="width:${(100 * r.n / max).toFixed(1)}%"></span></span><span class="n">${r.n}</span></button>`
+    ).join('') : (zero ? '' : '<p class="zero">当前筛选下没有数据。</p>')) + zero + '</div>';
+  }).join('');
+}
+
+/* ---------- list ---------- */
+function noteHtml(x) {
+  if (EDIT) {
+    return `<div class="pick" role="group" aria-label="状态"><span>状态</span>` +
+      ST.map((s, k) => `<button data-act="set" data-st="${k}" class="${k === 2 ? 'y' : ''}" aria-pressed="${x.st === k}">${s}</button>`).join('') + `</div>` +
+      `<div class="note"><label for="n-${esc(x.i)}">批注</label><textarea id="n-${esc(x.i)}" data-act="note" placeholder="写下这篇的结论、疑点和下一步。">${esc(x.nt)}</textarea>` +
+      `<p class="hint" id="h-${esc(x.i)}">${esc(HINT[x.i] || '自动保存到 notes/' + x.i + '.md')}</p></div>`;
+  }
+  return `<div class="pick"><span>状态</span><b>${ST[x.st]}</b></div>` +
+    (x.nt ? `<div class="note"><div class="lbl">批注</div><div class="txt">${esc(x.nt)}</div></div>` : '') +
+    (gh ? `<p class="hint">${x.nt ? '' : '还没有批注。'}<a href="${esc(editUrl(x))}" target="_blank" rel="noopener">在 GitHub 上${x.nf ? '编辑' : '写'}批注</a></p>` : '');
+}
+function rowHtml(x) {
+  const open = S.open === x.i;
+  const who = x.k === 'b' ? x.a : (x.n > 1 ? `${x.a} 等 ${x.n} 人` : x.a);
+  const tags = x.g.map(g => `<span class="tg">${esc(D.tags[g])}</span>`).join('') + x.u.map(u => `<span class="tg u">${esc(u)}</span>`).join('');
+  let h = `<article class="row st${x.st}${open ? ' open' : ''}" id="r-${esc(x.i)}" data-i="${esc(x.i)}">` +
+    (EDIT ? `<button class="mark" data-act="cycle" aria-label="状态：${ST[x.st]}。点击切换" title="${ST[x.st]}，点击切换"></button>`
+          : `<span class="mark" role="img" aria-label="${ST[x.st]}" title="${ST[x.st]}"></span>`) +
+    `<time>${x.d}</time>` +
+    `<div><a class="ttl" href="${esc(href(x))}" target="_blank" rel="noopener" title="${x.k === 'p' ? '在 alphaXiv 打开' : '打开原文'}">${esc(x.t)}</a>` +
+    `<div class="meta"><span class="dt">${x.d}</span><span class="au">${esc(who)}</span>${x.v ? `<span class="tg v">${esc(x.v)}</span>` : ''}${tags}</div></div>` +
+    `<span class="num${x.c ? '' : ' z'}">${fmt(x.c)}</span><span class="num s2${x.s ? '' : ' z'}">${fmt(x.s)}</span><span class="num gh${x.r ? '' : ' z'}">${fmt(x.r)}</span>` +
+    `<button class="more" data-act="toggle" aria-expanded="${open}" aria-label="${open ? '收起详情' : '展开详情'}"></button>`;
+  if (open) {
+    const facts = [];
+    if (x.bt) facts.push(['精读批次', x.bt]);
+    if (x.v) facts.push(['发表去向', x.v]);
+    if (x.b.length) facts.push(['基准', x.b.join('、')]);
+    if (x.m.length) facts.push(['模型', x.m.join('、')]);
+    if (x.k === 'p' && !x.ft) facts.push(['正文', '没有取到全文，机型、基准、模型没有统计']);
+    h += `<div class="detail">` + noteHtml(x) +
+      (x.x ? `<p class="abs">${esc(x.x)}</p>` : '') +
+      (facts.length ? `<dl class="facts">${facts.map(f => `<dt>${f[0]}</dt><dd>${esc(f[1])}</dd>`).join('')}</dl>` : '') +
+      `<div class="links">` +
+      (x.k === 'p'
+        ? `<a class="go" href="https://www.alphaxiv.org/abs/${esc(x.i)}" target="_blank" rel="noopener">在 alphaXiv 阅读</a><a href="https://arxiv.org/abs/${esc(x.i)}" target="_blank" rel="noopener">arXiv</a><a href="https://arxiv.org/pdf/${esc(x.i)}" target="_blank" rel="noopener">PDF</a>`
+        : `<a class="go" href="${esc(x.l)}" target="_blank" rel="noopener">阅读原文</a>`) +
+      (x.p ? `<a href="https://${esc(x.p)}" target="_blank" rel="noopener">代码仓库</a>` : '') +
+      `</div></div>`;
+  }
+  return h + '</article>';
+}
+function paintList(list) {
+  if (!list.length) {
+    $('list').innerHTML = '<p class="empty">没有符合条件的条目。<button class="clear" data-act="reset">清除筛选</button></p>';
+    return;
+  }
+  let h = '<div class="head"><span></span><span>日期</span><span>标题</span><span class="r">库内被引</span><span class="r s2">S2 被引</span><span class="r gh">stars</span><span></span></div>';
+  let cur = '';
+  const per = {};
+  if (S.sort === 'date') list.forEach(x => per[x.d.slice(0, 7)] = (per[x.d.slice(0, 7)] || 0) + 1);
+  for (const x of list) {
+    if (S.sort === 'date' && x.d.slice(0, 7) !== cur) {
+      cur = x.d.slice(0, 7);
+      h += `<h2 class="grp">${cur.slice(0, 4)} 年 ${+cur.slice(5)} 月<span>${per[cur]} 篇</span></h2>`;
+    }
+    h += rowHtml(x);
+  }
+  $('list').innerHTML = h;
+}
+
+/* ---------- bar ---------- */
+function paintBar(shown) {
+  const n = {all: I.length, queue: I.filter(x => x.st === 1).length, read: I.filter(x => x.st === 2).length, blog: I.filter(x => x.k === 'b').length};
+  $('tabs').innerHTML = [['all', '全部', ''], ['queue', '待读', '<i></i>'], ['read', '已读', '<i class="y"></i>'], ['blog', '博客', '']]
+    .map(([k, lab, sw]) => `<button class="tab" data-view="${k}" aria-pressed="${S.view === k}">${sw}${lab}<span class="n">${n[k]}</span></button>`).join('');
+  const chips = [];
+  for (const F of FAC) for (const v of S.f[F.k]) {
+    const lab = F.k === 'g' ? D.tags[v] : v;
+    chips.push(`<button class="chip" data-k="${F.k}" data-v="${esc(v)}" aria-label="去掉筛选 ${esc(lab)}">${esc(lab)} ×</button>`);
+  }
+  $('active').innerHTML = (chips.length ? chips.join('') + '<button class="clear" data-act="reset">清除筛选</button>' : '') +
+    (shown < I.length ? `<span class="cnt">显示 ${shown} 篇，共 ${I.length} 篇</span>` : '');
+}
+function paintHead() {
+  const asof = new Date(D.asof + 'T00:00:00Z');
+  const week = I.filter(x => { const d = (asof - new Date(x.d + 'T00:00:00Z')) / 864e5; return d >= 0 && d < 7; }).length;
+  const np = I.filter(x => x.k === 'p').length, nb = I.length - np;
+  $('lede').innerHTML = `让通用 LLM agent 操作机器人的研究。库里有 <b>${np}</b> 篇论文和 <b>${nb}</b> 篇博客，其中 <b>${week}</b> 篇发布于最近 7 天。每个方格是一篇，按发布月份堆叠，点方格可以定位到它。`;
+  $('asof').innerHTML = `数据更新于 ${esc(D.asof)}` + (EDIT ? '<span class="mode">本地编辑模式，改动自动保存</span>' : '') +
+    (gh ? `<a href="${esc(gh)}" target="_blank" rel="noopener">GitHub 仓库</a>` : '');
+}
+function paint() {
+  const list = sorted(I.filter(match));
+  paintChart(new Set(list)); paintFacets(list); paintBar(list.length); paintList(list);
+  const ta = document.querySelector('.note textarea');
+  if (ta) ta.style.height = Math.max(76, ta.scrollHeight + 2) + 'px';
+}
+function reset() { S.q = ''; $('q').value = ''; S.view = 'all'; S.pin = null; for (const k in S.f) S.f[k].clear(); }
+function val(k, v) { return k === 'g' ? +v : v; }
+
+/* ---------- saving (local only) ---------- */
+function hint(x, msg) { HINT[x.i] = msg; const el = $('h-' + x.i); if (el) el.textContent = msg; }
+function save(x, delay) {
+  clearTimeout(timers[x.i]);
+  hint(x, '正在保存…');
+  timers[x.i] = setTimeout(() => {
+    fetch('api/note', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id: x.i, status: STK[x.st], note: x.nt})})
+      .then(r => r.json())
+      .then(j => {
+        if (!j.ok) return hint(x, '没有保存：' + j.error);
+        x.nf = (x.st || x.nt || x.bt) ? 1 : 0;
+        hint(x, x.nf ? '已保存到 notes/' + x.i + '.md' : '已保存（这一条没有内容，没有留文件）');
+      })
+      .catch(() => hint(x, '没有保存：本地服务没有响应。确认 serve.py 还在运行。'));
+  }, delay);
+}
+
+/* ---------- events ---------- */
+$('facets').addEventListener('click', e => {
+  const b = e.target.closest('.fr'); if (!b) return;
+  const set = S.f[b.dataset.k], v = val(b.dataset.k, b.dataset.v);
+  set.has(v) ? set.delete(v) : set.add(v); S.pin = null; paint();
+});
+$('active').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.act === 'reset') reset(); else S.f[b.dataset.k].delete(val(b.dataset.k, b.dataset.v));
+  paint();
+});
+$('tabs').addEventListener('click', e => { const b = e.target.closest('.tab'); if (b) { S.view = b.dataset.view; S.pin = null; paint(); } });
+$('q').addEventListener('input', e => { S.q = e.target.value.trim(); S.pin = null; paint(); });
+$('sort').addEventListener('change', e => { S.sort = e.target.value; paint(); });
+$('list').addEventListener('click', e => {
+  const act = e.target.closest('[data-act]');
+  if (act && act.dataset.act === 'reset') { reset(); paint(); return; }
+  const row = e.target.closest('.row'); if (!row) return;
+  const x = byId[row.dataset.i];
+  if (EDIT && act && (act.dataset.act === 'cycle' || act.dataset.act === 'set')) {
+    x.st = act.dataset.act === 'cycle' ? (x.st + 1) % 3 : +act.dataset.st;
+    S.pin = x.i; save(x, 0); paint(); return;
+  }
+  if (e.target.closest('a, textarea, .detail')) return;
+  S.open = S.open === x.i ? null : x.i; S.pin = null; paint();
+});
+$('list').addEventListener('input', e => {
+  if (!EDIT || e.target.dataset.act !== 'note') return;
+  const x = byId[e.target.closest('.row').dataset.i];
+  x.nt = e.target.value; save(x, 600);
+});
+const tip = $('tip');
+$('cols').addEventListener('mousemove', e => {
+  const el = e.target.closest('.sq');
+  if (!el) { tip.style.display = 'none'; return; }
+  const x = byId[el.dataset.i];
+  tip.innerHTML = `<b>${esc(x.t)}</b>${x.d}　${ST[x.st]}${x.c != null ? '　库内被引 ' + x.c : ''}`;
+  tip.style.display = 'block';
+  const w = tip.offsetWidth, hgt = tip.offsetHeight;
+  tip.style.left = Math.max(8, Math.min(e.clientX + 14, innerWidth - w - 8)) + 'px';
+  tip.style.top = (e.clientY - hgt - 12 < 8 ? e.clientY + 18 : e.clientY - hgt - 12) + 'px';
+});
+$('cols').addEventListener('mouseleave', () => tip.style.display = 'none');
+$('cols').addEventListener('click', e => {
+  const el = e.target.closest('.sq'); if (!el) return;
+  const x = byId[el.dataset.i];
+  if (!match(x)) reset();
+  S.sort = 'date'; $('sort').value = 'date'; S.open = x.i; paint();
+  const row = $('r-' + x.i);
+  if (row) { row.scrollIntoView({block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); row.classList.add('flash'); }
+});
+
+/* ---------- boot ---------- */
+paintHead(); buildChart(); paint();
+if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+  fetch('api/ping').then(r => r.ok ? r.json() : null)
+    .then(j => { if (j && j.ok) { EDIT = true; paintHead(); paint(); } })
+    .catch(() => {});
+}
+</script>
+</body>
+</html>

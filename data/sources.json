@@ -1,0 +1,65 @@
+{
+ "site": {
+  "repo": "senp98/agentic-robotics-tracker",
+  "branch": "main"
+ },
+ "lookback_days": 21,
+ "backtrack_min_citations": 10,
+ "arxiv_queries": [
+  {
+   "name": "robot-use agent",
+   "query": "all:\"robot-use agent\" OR all:\"robot-use agents\" OR all:\"robot use agent\"",
+   "max": 100
+  },
+  {
+   "name": "agentic robotics",
+   "query": "abs:\"agentic robotics\" OR abs:\"agentic robot\" OR abs:\"agentic manipulation\"",
+   "max": 100
+  },
+  {
+   "name": "harness",
+   "query": "cat:cs.RO AND abs:harness AND (abs:agent OR abs:VLM OR abs:agentic)",
+   "max": 150
+  },
+  {
+   "name": "code as policy",
+   "query": "cat:cs.RO AND (abs:\"code as policy\" OR abs:\"code-as-policy\" OR abs:\"code as policies\")",
+   "max": 100
+  },
+  {
+   "name": "coding agent",
+   "query": "cat:cs.RO AND (abs:\"coding agent\" OR abs:\"coding agents\")",
+   "max": 100
+  },
+  {
+   "name": "frontier model",
+   "query": "cat:cs.RO AND (abs:\"GPT-6\" OR abs:\"Claude\" OR abs:\"frontier model\" OR abs:\"frontier models\") AND (abs:agent OR abs:agents)",
+   "max": 100
+  },
+  {
+   "name": "self-improvement",
+   "query": "cat:cs.RO AND (abs:\"recursive self-improvement\" OR abs:\"self-evolving\")",
+   "max": 100
+  },
+  {
+   "name": "benchmarks",
+   "query": "all:RoboDojo OR all:\"CaP-Bench\" OR all:\"LIBERO-PRO\"",
+   "max": 150
+  },
+  {
+   "name": "humanoid agent",
+   "query": "abs:humanoid AND (abs:\"coding agent\" OR abs:agentic OR abs:\"LLM agent\" OR abs:\"VLM agent\" OR abs:harness OR abs:\"robot-use\")",
+   "max": 100
+  },
+  {
+   "name": "unitree",
+   "query": "abs:Unitree AND (abs:agentic OR abs:\"coding agent\" OR abs:LLM OR abs:VLM OR abs:\"language model\" OR abs:\"foundation model\")",
+   "max": 100
+  },
+  {
+   "name": "loco-manipulation",
+   "query": "abs:\"loco-manipulation\" AND (abs:agentic OR abs:VLM OR abs:LLM OR abs:\"language model\" OR abs:\"coding agent\")",
+   "max": 100
+  }
+ ]
+}
