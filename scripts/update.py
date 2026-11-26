@@ -121,16 +121,16 @@ def relevant(r):
 
 
 def venue_claim(r):
-    """从作者在 arXiv 写的备注里取发表去向；投稿中的不算。"""
+    """从作者在 arXiv 写的备注里取发表去向。这是作者自己写的，没有核对。
+    投稿中、挑战赛报告、late-breaking 之类不算；备注里提到 workshop 的会标出来。"""
     txt = ' '.join([r.get('journal_ref', ''), r.get('comment', '')])
     m = VENUE.search(txt)
     if not m:
         return ''
-    near = txt[max(0, m.start() - 60): m.end() + 30].lower()
-    if re.search(r'submi|under review|in submission', near):
+    low = txt.lower()
+    if re.search(r'submitted|under review|in submission|late[- ]breaking|challenge|technical report|\barr\b', low):
         return ''
-    name = m.group(0).strip(" ,'")
-    return name + (' (workshop)' if 'workshop' in near else '')
+    return m.group(0).strip(" ,'") + (' (workshop)' if 'workshop' in low else '')
 
 
 # ---------------------------------------------------------------- 全文、代码仓库
