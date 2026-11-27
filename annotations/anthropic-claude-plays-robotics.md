@@ -31,23 +31,23 @@ updated: 2026-11-27
 
 **中文**
 
-- 模型在机器人任务上的能力，很大程度上取决于它和机器人的连接方式。亲自驱动关节大多失败；监督预训练控制器，或使用简单的定向工具，就能完成真实的导航和操作任务。（A001）
-- 代际提升很大一部分来自"看到结果后调整策略"：各代模型的首次尝试相差不大，差距出现在后续尝试。（A004）
-- 在经典控制任务上，几乎所有模型自己训练 RL 策略，都不如自己手写控制器。（A005）
-- 人形最难。没有一个模型让 G1 从倒地站起；没有预训练策略，前沿模型控制不了人形。
-- 配上预训练步态，模型能完成简单导航；需要持续空间记录或开环规划的任务稳定失败，瓶颈主要是掌握自己在哪。（A007）
-- 有效的辅助是定向信息。光标和指南针对测试过的每个模型和配置都有帮助，深度图和分割叠加大致中性。（A008、A011）
-- 直接控制的成绩是上限。测试时在两次模型调用之间暂停了仿真器；实时控制约需 83 Hz，当前模型约 0.2 到 0.4 Hz。（A003）
+- 模型在机器人任务上的能力，==很大程度上取决于它和机器人的连接方式==。亲自驱动关节大多失败；==监督预训练控制器==，或使用==简单的定向工具==，就能完成真实的导航和操作任务。（A001）
+- 代际提升很大一部分来自=="看到结果后调整策略"==：各代模型的首次尝试相差不大，差距出现在后续尝试。（A004）
+- 在经典控制任务上，几乎所有模型==自己训练 RL 策略，都不如自己手写控制器==。（A005）
+- ==人形最难==。没有一个模型让 G1 从倒地站起；==没有预训练策略，前沿模型控制不了人形==。
+- 配上预训练步态，模型能完成简单导航；需要持续空间记录或开环规划的任务稳定失败，==瓶颈主要是掌握自己在哪==。（A007）
+- ==有效的辅助是定向信息==。==光标==和==指南针==对测试过的每个模型和配置都有帮助，深度图和分割叠加大致中性。（A008、A011）
+- ==直接控制的成绩是上限==。测试时在两次模型调用之间暂停了仿真器；实时控制约需 ==83 Hz==，当前模型约 ==0.2 到 0.4 Hz==。（A003）
 
 **EN**
 
-- A model's robotics capability depends heavily on how it is connected to the robot. Driving the joints directly mostly fails; supervising a pretrained controller, or using simple orientation tools, lets it complete real navigation and manipulation tasks. (A001)
-- Much of the generational improvement comes from revising strategy after seeing outcomes: first attempts are similar across generations, and the gap appears in later attempts. (A004)
-- On classic-control tasks, nearly every model does worse training its own RL policy than writing a controller by hand. (A005)
-- The humanoid is the hardest. No model stood the G1 up from a collapsed pose, and frontier models cannot control a humanoid without a pretrained policy.
-- With a pretrained gait, models complete simple navigation; tasks that need sustained spatial bookkeeping or open-loop planning fail reliably, and the main bottleneck is keeping track of where the robot is. (A007)
-- The aids that work are orientation aids. The cursor and the compass help every model and configuration tested, while depth maps and segmentation overlays are roughly neutral. (A008, A011)
-- Direct-control scores are an upper bound. The simulator was paused between model calls; real-time control needs about 83 Hz, and current models run at about 0.2 to 0.4 Hz. (A003)
+- A model's robotics capability ==depends heavily on how it is connected to the robot==. Driving the joints directly mostly fails; ==supervising a pretrained controller==, or using ==simple orientation tools==, lets it complete real navigation and manipulation tasks. (A001)
+- Much of the generational improvement comes from ==revising strategy after seeing outcomes==: first attempts are similar across generations, and the gap appears in later attempts. (A004)
+- On classic-control tasks, nearly every model ==does worse training its own RL policy than writing a controller by hand==. (A005)
+- ==The humanoid is the hardest==. No model stood the G1 up from a collapsed pose, and ==frontier models cannot control a humanoid without a pretrained policy==.
+- With a pretrained gait, models complete simple navigation; tasks that need sustained spatial bookkeeping or open-loop planning fail reliably, and ==the main bottleneck is keeping track of where the robot is==. (A007)
+- ==The aids that work are orientation aids==. The ==cursor== and the ==compass== help every model and configuration tested, while depth maps and segmentation overlays are roughly neutral. (A008, A011)
+- ==Direct-control scores are an upper bound==. The simulator was paused between model calls; real-time control needs about ==83 Hz==, and current models run at about ==0.2 to 0.4 Hz==. (A003)
 
 ### 我们的看法 | Our views
 

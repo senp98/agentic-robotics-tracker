@@ -78,6 +78,7 @@ main h2{font:600 22px/1.3 var(--serif);margin:0}
 .prose > :first-child{margin-top:0}
 .prose > :last-child{margin-bottom:0}
 .prose a{text-underline-offset:2px}
+.prose mark{color:inherit;background:linear-gradient(transparent 58%,var(--marker) 58%,var(--marker) 94%,transparent 94%);box-decoration-break:clone;-webkit-box-decoration-break:clone}
 .who{display:inline-block;margin-right:6px;padding:0 6px;border-radius:3px;font-size:12px;font-weight:600;line-height:1.55;white-space:nowrap;vertical-align:1px}
 .who.me{background:var(--marker);box-shadow:inset 0 0 0 1px var(--marker-edge)}
 .who.cl{background:var(--mist);box-shadow:inset 0 0 0 1px #c3c9d1}
@@ -176,10 +177,11 @@ function boot(D) {
   const S = {lang: ['both', 'zh', 'en'].includes(store.get('art-lang')) ? store.get('art-lang') : 'both', f: 'all'};
   const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ---------- 很小的一部分 Markdown：段落、列表、加粗、行内代码、链接 ---------- */
+  /* ---------- 很小的一部分 Markdown：段落、列表、加粗、==高亮==、行内代码、链接 ---------- */
   function inline(s) {
     return esc(s)
       .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+      .replace(/==([^=]+)==/g, '<mark>$1</mark>')
       .replace(/`([^`]+)`/g, '<code>$1</code>')
       .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
       .replace(/\bA\d{3}\b/g, m => ids.has(m) ? `<a href="#${m}">${m}</a>` : m);   // 条目编号链接到那一条
