@@ -114,6 +114,8 @@ h1{font:600 34px/1.15 var(--serif);letter-spacing:-.01em;margin:0}
 .st2 .mark{background:var(--marker);box-shadow:inset 0 0 0 1px var(--marker-edge)}
 .mark::after{content:"";position:absolute;left:4.6px;top:1.6px;width:3px;height:7px;border:solid transparent;border-width:0 2px 2px 0;transform:rotate(45deg)}
 .st2 .mark::after{border-color:var(--graphite)}
+.mark.n{color:var(--graphite);font:700 10px/14px var(--sans);text-align:center}
+.mark.n::after{content:none}
 .st0 .mark:hover::after{border-color:#8d96a3}
 .st1 .mark:hover::after{border-color:#fff}
 .row time{color:var(--pencil);font-size:13px;padding-top:3px}
@@ -139,6 +141,10 @@ h1{font:600 34px/1.15 var(--serif);letter-spacing:-.01em;margin:0}
 .pick button{border:1px solid var(--line);background:var(--paper);border-radius:4px;padding:2px 10px;cursor:pointer;color:var(--graphite)}
 .pick button[aria-pressed=true]{background:var(--graphite);border-color:var(--graphite);color:#fff}
 .pick button.y[aria-pressed=true]{background:var(--marker);border-color:var(--marker-edge);color:var(--graphite)}
+.pick .rc{margin-left:10px}
+.pick .rc b{display:inline-block;min-width:1.6em;text-align:center}
+.pick .rc button{padding:2px 8px}
+.pick .rc button:disabled{color:#aab1bb;cursor:default}
 .note{margin:12px 0 0}
 .note label,.note .lbl{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
 .note textarea,.note .txt{display:block;width:100%;padding:9px 11px;border:0;border-left:3px solid var(--marker);border-radius:0 4px 4px 0;background:var(--marker-wash);line-height:1.6}
@@ -230,7 +236,7 @@ dialog .err{color:#a1260d;font-size:13px;min-height:1.4em;margin:8px 0 0}
   <footer class="foot">
     <p>论文元数据来自 arXiv。库内被引是这个库里有多少篇论文的参考文献引用了它；S2 被引来自 Semantic Scholar；stars 来自论文的代码仓库。新论文和这些数字每周自动更新一次。</p>
     <p>标题链接到 alphaXiv，博客链接到原文。发表去向取自作者在 arXiv 写的备注。新收录的条目一律是未读，是否相关由关键词规则判断，会混进不相关的论文。</p>
-    <p>最初的状态和批注来自 2026 年 11 月的一轮调研：标为待读的论文当时只读过摘要，三篇标为已读的博客通读过原文。</p>
+    <p>精读清单的分批和其中每条的批注（入选理由）来自 2026 年 11 月的一轮调研，当时只读过摘要。阅读状态从全部未读开始记。</p>
   </footer>
 </div>
 <div id="tip" role="tooltip"></div>
@@ -362,15 +368,18 @@ function paintFacets(list) {
 }
 
 /* ---------- list ---------- */
+const stText = x => x.st === 2 ? `已读 ${x.rc} 遍` : ST[x.st];
 function noteHtml(x) {
   if (!EDIT) {
-    return `<div class="pick"><span>状态</span><b>${ST[x.st]}</b></div>` +
+    return `<div class="pick"><span>状态</span><b>${stText(x)}</b></div>` +
       (x.nt ? `<div class="note"><div class="lbl">批注</div><div class="txt">${esc(x.nt)}</div></div>` : '') +
       (gh ? `<p class="hint">${x.nt ? '' : '还没有批注。'}<button class="lnk" data-act="setup">开启编辑</button>后可以直接在这里改。</p>` : '');
   }
   const idle = EDIT === 'gh' ? '点保存后提交到 GitHub，也可以按 Ctrl/⌘ + Enter' : '自动保存到 notes/' + x.i + '.md';
   return `<div class="pick" role="group" aria-label="状态"><span>状态</span>` +
-    ST.map((s, k) => `<button data-act="set" data-st="${k}" class="${k === 2 ? 'y' : ''}" aria-pressed="${x.st === k}">${s}</button>`).join('') + `</div>` +
+    ST.map((s, k) => `<button data-act="set" data-st="${k}" class="${k === 2 ? 'y' : ''}" aria-pressed="${x.st === k}">${s}</button>`).join('') +
+    `<span class="rc">读过 <b>${x.rc}</b> 遍</span>` +
+    `<button data-act="less" aria-label="少记一遍" ${x.rc ? '' : 'disabled'}>−</button><button data-act="more1" aria-label="又读了一遍">＋</button></div>` +
     `<div class="note"><label for="n-${esc(x.i)}">批注</label><textarea id="n-${esc(x.i)}" data-act="note" placeholder="写下这篇的结论、疑点和下一步。">${esc(x.nt)}</textarea>` +
     `<div class="act">${EDIT === 'gh' ? '<button class="btn" data-act="savenote">保存批注</button>' : ''}<p class="hint" id="h-${esc(x.i)}">${esc(HINT[x.i] || idle)}</p></div></div>`;
 }
@@ -379,7 +388,7 @@ function rowHtml(x) {
   const who = x.k === 'b' ? x.a : (x.n > 1 ? `${x.a} 等 ${x.n} 人` : x.a);
   const tags = x.g.map(g => `<span class="tg">${esc(D.tags[g])}</span>`).join('') + x.u.map(u => `<span class="tg u">${esc(u)}</span>`).join('');
   let h = `<article class="row st${x.st}${open ? ' open' : ''}" id="r-${esc(x.i)}" data-i="${esc(x.i)}">` +
-    `<button class="mark" data-act="check" role="checkbox" aria-checked="${x.st === 2}" aria-label="${esc(x.t)}：${ST[x.st]}" title="${x.st === 2 ? '已读，点一下取消' : ST[x.st] + '，点一下标为已读'}"></button>` +
+    `<button class="mark${x.rc > 1 ? ' n' : ''}" data-act="check" role="checkbox" aria-checked="${x.st === 2}" aria-label="${esc(x.t)}：${stText(x)}" title="${x.st === 2 ? stText(x) + '，点一下取消' : ST[x.st] + '，点一下标为已读'}">${x.rc > 1 ? x.rc : ''}</button>` +
     `<time>${x.d}</time>` +
     `<div><a class="ttl" href="${esc(href(x))}" target="_blank" rel="noopener" title="${x.k === 'p' ? '在 alphaXiv 打开' : '打开原文'}">${esc(x.t)}</a>` +
     `<div class="meta"><span class="dt">${x.d}</span><span class="au">${esc(who)}</span>${x.v ? `<span class="tg v">${esc(x.v)}</span>` : ''}${x.bt ? `<span class="tg bt">${esc(x.bt)}</span>` : ''}${tags}</div></div>` +
@@ -469,18 +478,18 @@ function save(x, delay) {
   timers[x.i] = setTimeout(() => EDIT === 'gh' ? saveGh(x) : saveLocal(x), delay);
 }
 function saved(x, msg) {
-  x.sv = {st: x.st, nt: x.nt}; dirty.delete(x.i); hint(x, msg);
+  x.sv = {st: x.st, rc: x.rc, nt: x.nt}; dirty.delete(x.i); hint(x, msg);
   if (EDIT === 'gh') {   // 线上的 data.js 要等重新发布才更新，这段时间先把改动记在浏览器里
-    const p = pending(); p[x.i] = {st: x.st, nt: x.nt, t: Date.now()}; store.set('art-pending', JSON.stringify(p));
+    const p = pending(); p[x.i] = {st: x.st, rc: x.rc, nt: x.nt, t: Date.now()}; store.set('art-pending', JSON.stringify(p));
     toast(msg);
   }
 }
 function failed(x, why) {
-  x.st = x.sv.st;                 // 状态退回上次保存的样子；批注框里的文字留着
+  x.st = x.sv.st; x.rc = x.sv.rc;  // 状态和遍数退回上次保存的样子；批注框里的文字留着
   hint(x, '没有保存：' + why); toast('没有保存：' + why, true); paint();
 }
 function saveLocal(x) {
-  fetch('api/note', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id: x.i, status: STK[x.st], note: x.nt})})
+  fetch('api/note', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id: x.i, status: STK[x.st], reads: x.rc, note: x.nt})})
     .then(r => r.json())
     .then(j => j.ok ? saved(x, (x.st || x.nt || x.bt) ? '已保存到 notes/' + x.i + '.md' : '已保存（这一条没有内容，没有留文件）') : failed(x, j.error))
     .catch(() => failed(x, '本地服务没有响应，确认 serve.py 还在运行'));
@@ -489,7 +498,7 @@ function saveLocal(x) {
 /* 线上编辑：通过 GitHub API 读、改、写 notes/<编号>.md。
    批注文件的格式要和 scripts/tracker.py 里的 read_note / write_note 保持一致。 */
 function parseNote(txt) {
-  const n = {status: 'unread', batch: '', topics: [], extra: [], body: ''};
+  const n = {status: 'unread', reads: 0, batch: '', topics: [], extra: [], body: ''};
   txt = txt.replace(/\r\n/g, '\n');
   let body = txt;
   if (txt.startsWith('---\n')) {
@@ -499,6 +508,7 @@ function parseNote(txt) {
         const c = line.indexOf(':'); if (c < 0) continue;
         const k = line.slice(0, c).trim(), v = line.slice(c + 1).trim();
         if (k === 'status') n.status = STK.includes(v) ? v : 'unread';
+        else if (k === 'reads') n.reads = /^\d+$/.test(v) ? parseInt(v, 10) : 0;
         else if (k === 'batch') n.batch = v;
         else if (k === 'topics') n.topics = v.replace(/^[\[\]]+|[\[\]]+$/g, '').split(',').map(t => t.trim().replace(/^["']+|["']+$/g, '')).filter(Boolean);
         else n.extra.push([k, v]);
@@ -507,10 +517,12 @@ function parseNote(txt) {
     }
   }
   n.body = body.replace(/^\n+|\n+$/g, '');
+  n.reads = n.status === 'read' ? Math.max(1, n.reads) : 0;
   return n;
 }
 function formatNote(n) {
   const head = ['status: ' + n.status];
+  if (n.reads > 1) head.push('reads: ' + n.reads);   // 读过一遍不用写
   if (n.batch) head.push('batch: ' + n.batch);
   if (n.topics.length) head.push('topics: [' + n.topics.join(', ') + ']');
   for (const [k, v] of n.extra) head.push(k + ': ' + v);
@@ -540,9 +552,10 @@ async function ghWrite(x, reread) {
     if (g.status === 200) { const j = await g.json(); sha = j.sha; cur = parseNote(b64d(j.content)); }
     else if (g.status !== 404) return {error: ghWhy(g)};
   }
-  const n = cur ? Object.assign({}, cur) : {status: 'unread', batch: '', topics: [], extra: [], body: ''};
-  const message = (n.status !== STK[x.st] ? ST[x.st] : '批注') + '：' + x.t.slice(0, 70);
-  n.status = STK[x.st];
+  const n = cur ? Object.assign({}, cur) : {status: 'unread', reads: 0, batch: '', topics: [], extra: [], body: ''};
+  const what = n.status !== STK[x.st] ? ST[x.st] : n.reads !== x.rc ? '读了 ' + x.rc + ' 遍' : '批注';
+  const message = what + '：' + x.t.slice(0, 70);
+  n.status = STK[x.st]; n.reads = x.st === 2 ? Math.max(1, x.rc) : 0;
   n.body = x.nt.replace(/\r\n/g, '\n').replace(/^\n+|\n+$/g, '');
   const empty = n.status === 'unread' && !n.body && !n.batch && !n.topics.length && !n.extra.length;
   let r;
@@ -581,8 +594,9 @@ function applyPending() {
   const p = pending();
   for (const id of Object.keys(p)) {
     const x = byId[id], v = p[id];
-    if (!x || (x.st === v.st && x.nt === v.nt) || Date.now() - v.t > 30 * 60e3) { delete p[id]; continue; }
-    x.st = v.st; x.nt = v.nt;
+    const rc = v.rc != null ? v.rc : (v.st === 2 ? 1 : 0);
+    if (!x || (x.st === v.st && x.rc === rc && x.nt === v.nt) || Date.now() - v.t > 30 * 60e3) { delete p[id]; continue; }
+    x.st = v.st; x.rc = rc; x.nt = v.nt;
   }
   store.set('art-pending', Object.keys(p).length ? JSON.stringify(p) : null);
 }
@@ -646,11 +660,16 @@ $('list').addEventListener('click', e => {
   if (a === 'setup') { openSetup(); return; }
   const row = e.target.closest('.row'); if (!row) return;
   const x = byId[row.dataset.i];
-  if (a === 'check' || a === 'set') {
+  if (a === 'check' || a === 'set' || a === 'more1' || a === 'less') {
     if (!EDIT) { openSetup(); return; }
-    if (a === 'set') x.st = +act.dataset.st;
-    else if (x.st === 2) x.st = x.pv != null ? x.pv : (x.bt ? 1 : 0);   // 取消勾选：回到勾选前的状态
-    else { x.pv = x.st; x.st = 2; }
+    // 遍数大于 0 就是已读；状态不是已读时遍数是 0
+    const read = n => { if (x.st !== 2) x.pv = x.st; x.st = 2; x.rc = n; };
+    const unread = st => { x.st = st; x.rc = 0; };
+    if (a === 'more1') read(Math.min(99, x.rc + 1));
+    else if (a === 'less') { if (x.rc > 1) x.rc--; else unread(x.pv != null ? x.pv : 0); }
+    else if (a === 'set') { const st = +act.dataset.st; if (st === 2) read(Math.max(1, x.rc)); else unread(st); }
+    else if (x.st === 2) unread(x.pv != null ? x.pv : 0);   // 取消勾选：回到勾选前的状态，不知道就回到未读
+    else read(1);
     S.pin = x.i; save(x, 0); paint(); return;
   }
   if (a === 'savenote') { save(x, 0); return; }
@@ -673,7 +692,7 @@ $('cols').addEventListener('mousemove', e => {
   const el = e.target.closest('.sq');
   if (!el) { tip.style.display = 'none'; return; }
   const x = byId[el.dataset.i];
-  tip.innerHTML = `<b>${esc(x.t)}</b>${x.d}　${ST[x.st]}${x.c != null ? '　库内被引 ' + x.c : ''}`;
+  tip.innerHTML = `<b>${esc(x.t)}</b>${x.d}　${stText(x)}${x.c != null ? '　库内被引 ' + x.c : ''}`;
   tip.style.display = 'block';
   const w = tip.offsetWidth, hgt = tip.offsetHeight;
   tip.style.left = Math.max(8, Math.min(e.clientX + 14, innerWidth - w - 8)) + 'px';
@@ -691,7 +710,7 @@ $('cols').addEventListener('click', e => {
 
 /* ---------- boot ---------- */
 applyPending();
-I.forEach(x => { x.sv = {st: x.st, nt: x.nt}; });
+I.forEach(x => { x.sv = {st: x.st, rc: x.rc, nt: x.nt}; });
 TOKEN = store.get('art-token');
 if (TOKEN && gh) EDIT = 'gh';
 paintHead(); buildChart(); paint();

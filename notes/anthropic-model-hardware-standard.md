@@ -1,5 +1,5 @@
 ---
-status: read
+status: unread
 batch: Anthropic 与观点
 ---
 让 agent 安全操作物理设备的驱动规范。研究预览，尚未开源，公告没有提到人形或宇树。值得借鉴的是把探索结果固化成确定性脚本、不再每步推理的做法。

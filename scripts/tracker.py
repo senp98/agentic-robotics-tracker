@@ -201,13 +201,14 @@ def load_ignore():
 
 # ---------------------------------------------------------------- 批注
 def read_note(pid):
-    """notes/<id>.md -> {'status', 'batch', 'topics', 'body', 'extra'}；没有文件返回 None。"""
+    """notes/<id>.md -> {'status', 'reads', 'batch', 'topics', 'body', 'extra'}；没有文件返回 None。
+    reads 是读过几遍；状态是已读而没写遍数的，算 1 遍。"""
     p = os.path.join(NOTES, pid + '.md')
     if not os.path.exists(p):
         return None
     with open(p, encoding='utf-8') as f:
         txt = f.read().replace('\r\n', '\n')
-    note = {'status': 'unread', 'batch': '', 'topics': [], 'body': '', 'extra': []}
+    note = {'status': 'unread', 'reads': 0, 'batch': '', 'topics': [], 'body': '', 'extra': []}
     body = txt
     if txt.startswith('---\n'):
         end = txt.find('\n---', 3)
@@ -219,6 +220,8 @@ def read_note(pid):
                 k, v = k.strip(), v.strip()
                 if k == 'status':
                     note['status'] = v if v in STATUS else 'unread'
+                elif k == 'reads':
+                    note['reads'] = int(v) if v.isdigit() else 0
                 elif k == 'batch':
                     note['batch'] = v
                 elif k == 'topics':
@@ -227,18 +230,29 @@ def read_note(pid):
                     note['extra'].append((k, v))
             body = txt[end + 4:]
     note['body'] = body.strip('\n')
+    note['reads'] = max(1, note['reads']) if note['status'] == 'read' else 0
     return note
 
 
-def write_note(pid, status=None, body=None):
-    """写状态和正文，保留文件里已有的 batch、topics 和其他字段。没有内容可写时删掉文件。"""
+def write_note(pid, status=None, body=None, reads=None):
+    """写状态、遍数和正文，保留文件里已有的 batch、topics 和其他字段。没有内容可写时删掉文件。
+    遍数大于 0 时状态一定是已读；状态不是已读时遍数归零。"""
     if not ID_RE.match(pid):
         raise ValueError('不合法的编号：%r' % pid)
-    note = read_note(pid) or {'status': 'unread', 'batch': '', 'topics': [], 'body': '', 'extra': []}
+    note = read_note(pid) or {'status': 'unread', 'reads': 0, 'batch': '', 'topics': [], 'body': '', 'extra': []}
     if status is not None:
         if status not in STATUS:
             raise ValueError('status 只能是 %s' % ' / '.join(STATUS))
         note['status'] = status
+    if reads is not None:
+        if isinstance(reads, bool) or not isinstance(reads, int) or not 0 <= reads <= 99:
+            raise ValueError('reads 要是 0 到 99 的整数')
+        note['reads'] = reads
+        if reads > 0:
+            note['status'] = 'read'
+        elif note['status'] == 'read':
+            note['status'] = 'unread'
+    note['reads'] = max(1, note['reads']) if note['status'] == 'read' else 0
     if body is not None:
         note['body'] = body.replace('\r\n', '\n').strip('\n')
     p = os.path.join(NOTES, pid + '.md')
@@ -247,6 +261,8 @@ def write_note(pid, status=None, body=None):
             os.remove(p)
         return
     head = ['status: ' + note['status']]
+    if note['reads'] > 1:   # 读过一遍不用写，status: read 就表示一遍
+        head.append('reads: %d' % note['reads'])
     if note['batch']:
         head.append('batch: ' + note['batch'])
     if note['topics']:
@@ -285,7 +301,8 @@ def build_data():
             'u': auto.get('unitree', []), 'b': auto.get('benchmarks', []), 'm': auto.get('models', []),
             'c': s.get('cited_in_library'), 's': s.get('s2'), 'r': s.get('stars'),
             'p': p.get('repo', ''), 'v': p.get('venue', ''),
-            'st': STATUS.index(n.get('status', 'unread')), 'nt': n.get('body', ''), 'bt': n.get('batch', ''),
+            'st': STATUS.index(n.get('status', 'unread')), 'rc': n.get('reads', 0),
+            'nt': n.get('body', ''), 'bt': n.get('batch', ''),
             'ft': bool(p.get('fulltext')),
         }
         if p.get('url'):

@@ -48,7 +48,7 @@ class Handler(SimpleHTTPRequestHandler):
             pid = req['id']
             if pid not in {p['id'] for p in T.load_papers()}:
                 raise ValueError('库里没有这个编号：%s' % pid)
-            T.write_note(pid, status=req.get('status'), body=req.get('note'))
+            T.write_note(pid, status=req.get('status'), body=req.get('note'), reads=req.get('reads'))
         except (KeyError, ValueError, TypeError) as e:
             return self._send(400, {'ok': False, 'error': str(e)})
         self._send(200, {'ok': True})
