@@ -34,28 +34,28 @@ h1{font:600 34px/1.15 var(--serif);letter-spacing:-.01em;margin:0}
 .lnk{border:0;background:none;padding:0;color:inherit;text-decoration:underline;cursor:pointer}
 .asof .lnk{display:block;margin:2px 0 0 auto}
 
-/* one square per item */
-.field{container-type:inline-size;padding:6px 0 30px}
-.cols{--c:clamp(4px,calc((86.8cqw - 130px)/78),12px);display:flex;align-items:flex-end;justify-content:space-between}
-.mo{display:flex;flex-direction:column}
-.sqs{display:flex;flex-wrap:wrap-reverse;gap:2px;width:calc(6*var(--c) + 10px)}
-.sq{width:var(--c);height:var(--c);border-radius:calc(var(--c)*.17);background:var(--unread);cursor:pointer;animation:pop .35s both;animation-delay:calc(var(--m)*40ms)}
-.sq.s1{background:var(--graphite)}
-.sq.s2{background:var(--marker);box-shadow:inset 0 0 0 1px var(--marker-edge)}
-.filtered .sq.s0{background:#9aa3af}
-.sq.off,.filtered .sq.off{opacity:.16;background:var(--unread)}
-.filtered .sq.s1.off{background:var(--graphite)}
-.filtered .sq.s2.off{background:var(--marker)}
-.sq:hover,.sq.on{outline:2px solid var(--graphite);outline-offset:1px}
-.mo-l{margin-top:8px;font-size:12.5px;color:var(--pencil);white-space:nowrap}
-.mo-l b{display:block;color:var(--graphite);font-weight:600;font-size:13px}
+/* calendar: one cell per day, darker = more published that day */
+.field{padding:8px 0 26px}
+.cal-m,.cal-g{display:grid;grid-template-columns:16px repeat(var(--weeks),minmax(0,1fr));column-gap:3px}
+.cal-m{margin-bottom:6px;font-size:12.5px;line-height:1.35;color:var(--pencil);white-space:nowrap}
+.cal-m span{grid-row:2}
+.cal-m .yr{grid-row:1;color:var(--graphite);font-weight:600}
+.cal-m .end{justify-self:end}
+.cal-g{grid-template-rows:repeat(7,auto);grid-auto-flow:column;row-gap:3px}
+.wd{align-self:center;font-size:11px;line-height:1;color:var(--pencil)}
+.l0{background-color:#f0f1f4}.l1{background-color:#cfd4db}.l2{background-color:#9aa3af}.l3{background-color:#5d6672}.l4{background-color:var(--graphite)}
+.rd{background-image:linear-gradient(to top,var(--marker) 0 30%,var(--marker-edge) 30% 37%,transparent 37%)}
+.dy{display:block;aspect-ratio:1;min-width:0;border:0;padding:0;border-radius:18%;animation:pop .3s both;animation-delay:calc(var(--w)*9ms)}
+.dy.x{visibility:hidden}
+.dy:not(.l0){cursor:pointer}
+.dy:not(.l0):hover,.dy.on{outline:2px solid var(--graphite);outline-offset:1px}
+.cal-foot{display:flex;flex-wrap:wrap;gap:6px 20px;align-items:center;justify-content:space-between;margin-top:12px;font-size:12.5px;color:var(--pencil)}
+.older{border:0;background:none;padding:0;color:inherit;text-decoration:underline;cursor:pointer}
+.older[aria-pressed=true]{color:var(--graphite);font-weight:600}
+.lg{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px}
+.lg span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.lg i{width:11px;height:11px;border-radius:2px}
 @keyframes pop{from{opacity:0;transform:scale(.4)}}
-@container (max-width:560px){  /* 窄屏：每列 4 格宽，方格大一些，列高一些 */
-  .cols{--c:clamp(3px,calc((86.8cqw - 39px)/52),12px)}
-  .sqs{gap:1px;width:calc(4*var(--c) + 3px)}
-  .mo-l{font-size:11px}.mo-l b{font-size:11.5px}.mo-l i{display:none}
-}
-.mo-l i{font-style:normal}
 
 /* facets: the statistics are the filters */
 .stats{border-top:1px solid var(--line);padding-top:18px}
@@ -177,8 +177,6 @@ dialog .err{color:#a1260d;font-size:13px;min-height:1.4em;margin:8px 0 0}
 #tip b{display:block;font:400 14px/1.35 var(--serif);margin-bottom:2px}
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9;width:max-content;max-width:min(560px,calc(100% - 32px));background:var(--graphite);color:#fff;border-radius:4px;padding:9px 14px;font-size:13.5px;display:none}
 #toast.bad{background:#a1260d}
-.flash{animation:flash 1.4s}
-@keyframes flash{from{box-shadow:-10px 0 0 var(--marker-wash),10px 0 0 var(--marker-wash);background:var(--marker-wash)}}
 
 @media (max-width:900px){.facets{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:720px){
@@ -188,13 +186,15 @@ dialog .err{color:#a1260d;font-size:13px;min-height:1.4em;margin:8px 0 0}
   .asof{grid-column:1;grid-row:auto;text-align:left}
   .asof span,.asof a,.asof .lnk{display:inline;margin:0 0 0 12px}
   .bar{position:static}
+  .cal-m,.cal-g{grid-template-columns:14px repeat(var(--weeks),minmax(0,1fr));column-gap:2px}
+  .cal-g{row-gap:2px}
   .head,.row{grid-template-columns:14px minmax(0,1fr) 4.6em 24px;column-gap:10px}
   .head span:nth-child(2),.row time,.head .s2,.head .gh,.num.s2,.num.gh{display:none}
   .meta .dt{display:inline}
   .detail{grid-column:2 / -1}
 }
 @media (max-width:520px){.facets{grid-template-columns:1fr}}
-@media (prefers-reduced-motion:reduce){.sq,.flash{animation:none}}
+@media (prefers-reduced-motion:reduce){.dy{animation:none}}
 </style>
 </head>
 <body>
@@ -205,8 +205,9 @@ dialog .err{color:#a1260d;font-size:13px;min-height:1.4em;margin:8px 0 0}
     <p class="asof" id="asof"></p>
   </header>
 
-  <section class="field" aria-label="按发布月份堆叠的条目">
-    <div class="cols" id="cols"></div>
+  <section class="field" aria-label="按发布日期排列的日历">
+    <div id="cal"></div>
+    <div class="cal-foot" id="calfoot"></div>
   </section>
 
   <div class="stats">
@@ -269,7 +270,7 @@ if (!window.TRACKER_DATA) {
 const D = window.TRACKER_DATA;
 const I = D.items, byId = Object.fromEntries(I.map(x => [x.i, x]));
 const ST = ['未读', '待读', '已读'], STK = ['unread', 'queue', 'read'];
-const S = {q: '', view: 'all', sort: 'date', f: {g: new Set(), u: new Set(), b: new Set(), m: new Set()}, bt: new Set(), open: null, pin: null};
+const S = {q: '', view: 'all', sort: 'date', f: {g: new Set(), u: new Set(), b: new Set(), m: new Set()}, bt: new Set(), day: null, open: null, pin: null};
 // 编辑有两种方式：'local' 是用 scripts/serve.py 在本机打开，改动写进 notes/；
 // 'gh' 是在浏览器里存了 token，改动通过 GitHub API 直接提交。都没有就是只读。
 let EDIT = null, TOKEN = null;
@@ -291,14 +292,6 @@ const href = x => x.k === 'p' ? 'https://www.alphaxiv.org/abs/' + x.i : x.l;
 const readHref = x => 'read.html?id=' + encodeURIComponent(x.i);   // 批注页：高亮、译文、批注和总结
 const gh = D.repo ? 'https://github.com/' + D.repo : '';
 
-/* 图上显示最近 12 个月，各占一列；更早的合成一列 */
-const MONTHS = (() => {
-  const y = +D.asof.slice(0, 4), m = +D.asof.slice(5, 7), out = [];
-  for (let k = 11; k >= 0; k--) out.push(new Date(Date.UTC(y, m - 1 - k, 1)).toISOString().slice(0, 7));
-  return out;
-})();
-const colOf = x => { const k = x.d.slice(0, 7); return k < MONTHS[0] ? 'old' : k > MONTHS[11] ? MONTHS[11] : k; };
-
 function match(x) {
   if (S.bt.size && !S.bt.has(x.bt)) return false;
   // 刚改过状态的那一条先留在当前视图里，免得写批注写到一半它从列表里消失
@@ -318,25 +311,62 @@ function sorted(a) {
   return a.slice().sort((x, y) => (y[k] ?? -1) - (x[k] ?? -1) || (x.d < y.d ? 1 : -1));
 }
 
-/* ---------- field chart ---------- */
-function buildChart() {
-  const cols = [{key: 'old', label: '更早', title: MONTHS[0] + ' 之前'}]
-    .concat(MONTHS.map(k => ({key: k, label: `${+k.slice(5)}<i> 月</i>`, title: `${k.slice(0, 4)} 年 ${+k.slice(5)} 月`})));
-  $('cols').innerHTML = cols.map((c, ci) => {
-    const items = I.filter(x => colOf(x) === c.key).sort((a, b) => a.d < b.d ? -1 : 1);
-    const sq = items.map(x => `<i class="sq s${x.st}" data-i="${esc(x.i)}" style="--m:${ci}"></i>`).join('');
-    return `<div class="mo" title="${c.title}"><div class="sqs">${sq}</div><div class="mo-l"><b>${c.label}</b><span data-mo="${c.key}">${items.length}</span></div></div>`;
-  }).join('');
+/* ---------- calendar: one cell per day ---------- */
+const DAY = 864e5, WD = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+const utc = d => Date.parse(d + 'T00:00:00Z');
+const iso = t => new Date(t).toISOString().slice(0, 10);
+const dayText = d => `${+d.slice(0, 4)} 年 ${+d.slice(5, 7)} 月 ${+d.slice(8)} 日 ${WD[(new Date(utc(d)).getUTCDay() + 6) % 7]}`;
+const NARROW = matchMedia('(max-width:720px)');
+let CAL = null, FILTERED = false;
+// S.day 是选中的那一天（'2026-11-23'），或者 'old'：日历范围之前的全部
+const inDay = x => !S.day || (S.day === 'old' ? x.d < CAL.startIso : x.d === S.day);
+function buildCal() {
+  // 每列一周，周一在上。宽屏显示最近 53 周，窄屏 26 周，最后一格是数据里最新的一天。
+  const weeks = NARROW.matches ? 26 : 53;
+  const end = utc(I.reduce((m, x) => x.d > m ? x.d : m, D.asof));
+  const start = end - (((new Date(end).getUTCDay() + 6) % 7) + (weeks - 1) * 7) * DAY;
+  CAL = {weeks, start, end, startIso: iso(start)};
+  let labels = '', prev = '', first = true;
+  let cells = ['一', '', '三', '', '五', '', '日'].map(t => `<span class="wd">${t}</span>`).join('');
+  for (let w = 0; w < weeks; w++) {
+    const mon = iso(start + w * 7 * DAY), ym = mon.slice(0, 7);
+    if (ym !== prev && (w > 0 || +mon.slice(8) <= 14)) {   // 第一列只剩月底几天时不标月份
+      const end = w >= weeks - 2 ? ' end' : '';   // 靠右边缘的标签向左排，免得伸出页面
+      if (first || ym.slice(5) === '01') labels += `<span class="yr${end}" style="grid-column:${w + 2}">${ym.slice(0, 4)} 年</span>`;
+      labels += `<span class="${end.trim()}" style="grid-column:${w + 2}">${+ym.slice(5)} 月</span>`;
+      first = false;
+    }
+    prev = ym;
+    for (let d = 0; d < 7; d++) {
+      const t = start + (w * 7 + d) * DAY;
+      cells += t > end ? '<i class="dy x"></i>' : `<button class="dy l0" data-d="${iso(t)}" tabindex="-1" style="--w:${w}"></button>`;
+    }
+  }
+  $('cal').style.setProperty('--weeks', weeks);
+  $('cal').innerHTML = `<div class="cal-m" aria-hidden="true">${labels}</div><div class="cal-g">${cells}</div>`;
 }
-function paintChart(set) {
-  const cnt = {};
-  document.querySelectorAll('.sq').forEach(el => {
-    const x = byId[el.dataset.i], on = set.has(x);
-    el.className = 'sq s' + x.st + (on ? '' : ' off') + (S.open === x.i ? ' on' : '');
-    if (on) cnt[colOf(x)] = (cnt[colOf(x)] || 0) + 1;
+function paintCal(base) {   // base：符合其他筛选的条目，不含"选中某一天"这一项
+  const n = {}, r = {};
+  let older = 0, last = null, sel = null;
+  for (const x of base) {
+    if (x.d < CAL.startIso) { older++; continue; }
+    n[x.d] = (n[x.d] || 0) + 1;
+    if (x.st === 2) r[x.d] = (r[x.d] || 0) + 1;
+  }
+  FILTERED = base.length < I.length;
+  $('cal').querySelectorAll('button.dy').forEach(el => {
+    const d = el.dataset.d, c = n[d] || 0;
+    el.className = 'dy l' + (c >= 7 ? 4 : c >= 4 ? 3 : c >= 2 ? 2 : c) + (r[d] ? ' rd' : '') + (S.day === d ? ' on' : '');
+    el.dataset.n = c; el.dataset.r = r[d] || 0; el.tabIndex = -1;
+    el.setAttribute('aria-label', dayText(d) + (c ? `，${c} 篇` : '，没有'));
+    el.setAttribute('aria-pressed', S.day === d);
+    if (c) { last = el; if (S.day === d) sel = el; }
   });
-  document.querySelectorAll('[data-mo]').forEach(el => el.textContent = cnt[el.dataset.mo] || 0);
-  $('cols').classList.toggle('filtered', set.size < I.length);
+  if (sel || last) (sel || last).tabIndex = 0;   // 整个日历只占一个 Tab 位，方向键在格子间移动
+  $('calfoot').innerHTML =
+    (older || S.day === 'old' ? `<button class="older" aria-pressed="${S.day === 'old'}">${CAL.startIso} 之前：${older} 篇</button>` : '<span></span>') +
+    '<span class="lg">每格一天，当天发布' + [['l0', '0'], ['l1', '1'], ['l2', '2–3'], ['l3', '4–6'], ['l4', '7 篇以上'], ['l1 rd', '有读过的']]
+      .map(([c, t]) => `<span><i class="${c}"></i>${t}</span>`).join('') + '</span>';
 }
 
 /* ---------- reading plan ---------- */
@@ -444,6 +474,10 @@ function paintBar(shown) {
     const lab = F.k === 'g' ? D.tags[v] : v;
     chips.push(`<button class="chip" data-k="${F.k}" data-v="${esc(v)}" aria-label="去掉筛选 ${esc(lab)}">${esc(lab)} ×</button>`);
   }
+  if (S.day) {
+    const lab = S.day === 'old' ? CAL.startIso + ' 之前' : S.day + ' 发布';
+    chips.push(`<button class="chip" data-k="day" aria-label="去掉筛选 ${lab}">${lab} ×</button>`);
+  }
   for (const b of S.bt) chips.push(`<button class="chip" data-k="bt" data-v="${esc(b)}" aria-label="去掉筛选 ${esc(b)}">${esc(b)} ×</button>`);
   $('active').innerHTML = (chips.length ? chips.join('') + '<button class="clear" data-act="reset">清除筛选</button>' : '') +
     (shown < I.length ? `<span class="cnt">显示 ${shown} 篇，共 ${I.length} 篇</span>` : '');
@@ -452,19 +486,19 @@ function paintHead() {
   const asof = new Date(D.asof + 'T00:00:00Z');
   const week = I.filter(x => { const d = (asof - new Date(x.d + 'T00:00:00Z')) / 864e5; return d >= 0 && d < 7; }).length;
   const np = I.filter(x => x.k === 'p').length, nb = I.length - np;
-  $('lede').innerHTML = `让通用 LLM agent 操作机器人的研究。库里有 <b>${np}</b> 篇论文和 <b>${nb}</b> 篇博客，其中 <b>${week}</b> 篇发布于最近 7 天。每个方格是一篇，按发布月份堆叠，点方格可以定位到它。`;
+  $('lede').innerHTML = `让通用 LLM agent 操作机器人的研究。库里有 <b>${np}</b> 篇论文和 <b>${nb}</b> 篇博客，其中 <b>${week}</b> 篇发布于最近 7 天。每个方格是一天，颜色越深，当天发布的越多；点一天只看那天发布的。`;
   const mode = EDIT === 'local' ? '本地编辑模式，改动自动保存' : EDIT === 'gh' ? '已开启编辑，改动直接提交到 GitHub' : '';
   $('asof').innerHTML = `数据更新于 ${esc(D.asof)}` + (mode ? `<span class="mode">${mode}</span>` : '') +
     (gh ? `<a href="${esc(gh)}" target="_blank" rel="noopener">GitHub 仓库</a>` : '') +
     (gh && EDIT !== 'local' ? `<button class="lnk" data-act="${EDIT === 'gh' ? 'off' : 'setup'}">${EDIT === 'gh' ? '关闭编辑' : '开启编辑'}</button>` : '');
 }
 function paint() {
-  const list = sorted(I.filter(match));
-  paintChart(new Set(list)); paintPlan(); paintFacets(list); paintBar(list.length); paintList(list);
+  const base = I.filter(match), list = sorted(base.filter(inDay));
+  paintCal(base); paintPlan(); paintFacets(list); paintBar(list.length); paintList(list);
   const ta = document.querySelector('.note textarea');
   if (ta) ta.style.height = Math.max(76, ta.scrollHeight + 2) + 'px';
 }
-function reset() { S.q = ''; $('q').value = ''; S.view = 'all'; S.pin = null; S.bt.clear(); for (const k in S.f) S.f[k].clear(); }
+function reset() { S.q = ''; $('q').value = ''; S.view = 'all'; S.pin = null; S.day = null; S.bt.clear(); for (const k in S.f) S.f[k].clear(); }
 function val(k, v) { return k === 'g' ? +v : v; }
 
 /* ---------- saving ---------- */
@@ -646,6 +680,7 @@ $('facets').addEventListener('click', e => {
 $('active').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.dataset.act === 'reset') reset();
+  else if (b.dataset.k === 'day') S.day = null;
   else if (b.dataset.k === 'bt') S.bt.delete(b.dataset.v);
   else S.f[b.dataset.k].delete(val(b.dataset.k, b.dataset.v));
   paint();
@@ -691,24 +726,40 @@ $('list').addEventListener('keydown', e => {
   }
 });
 const tip = $('tip');
-$('cols').addEventListener('mousemove', e => {
-  const el = e.target.closest('.sq');
+$('cal').addEventListener('mousemove', e => {
+  const el = e.target.closest('button.dy');
   if (!el) { tip.style.display = 'none'; return; }
-  const x = byId[el.dataset.i];
-  tip.innerHTML = `<b>${esc(x.t)}</b>${x.d}　${stText(x)}${x.c != null ? '　库内被引 ' + x.c : ''}`;
+  const c = +el.dataset.n, r = +el.dataset.r;
+  tip.innerHTML = `<b>${dayText(el.dataset.d)}</b>` + (c
+    ? `${FILTERED ? '符合筛选的' : '发布'} ${c} 篇${r ? '，其中读过 ' + r + ' 篇' : ''}`
+    : (FILTERED ? '没有符合筛选的' : '没有收录'));
   tip.style.display = 'block';
   const w = tip.offsetWidth, hgt = tip.offsetHeight;
   tip.style.left = Math.max(8, Math.min(e.clientX + 14, innerWidth - w - 8)) + 'px';
   tip.style.top = (e.clientY - hgt - 12 < 8 ? e.clientY + 18 : e.clientY - hgt - 12) + 'px';
 });
-$('cols').addEventListener('mouseleave', () => tip.style.display = 'none');
-$('cols').addEventListener('click', e => {
-  const el = e.target.closest('.sq'); if (!el) return;
-  const x = byId[el.dataset.i];
-  if (!match(x)) reset();
-  S.sort = 'date'; $('sort').value = 'date'; S.open = x.i; paint();
-  const row = $('r-' + x.i);
-  if (row) { row.scrollIntoView({block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); row.classList.add('flash'); }
+$('cal').addEventListener('mouseleave', () => tip.style.display = 'none');
+$('cal').addEventListener('click', e => {
+  const el = e.target.closest('button.dy'); if (!el || el.dataset.n === '0') return;
+  S.day = S.day === el.dataset.d ? null : el.dataset.d; S.pin = null; paint();
+});
+$('cal').addEventListener('keydown', e => {
+  const step = {ArrowLeft: -7, ArrowRight: 7, ArrowUp: -1, ArrowDown: 1}[e.key];
+  const el = e.target.closest('button.dy'); if (!step || !el) return;
+  e.preventDefault();
+  for (let t = utc(el.dataset.d) + step * DAY; t >= CAL.start && t <= CAL.end; t += step * DAY) {   // 跳过没有论文的日子
+    const nx = $('cal').querySelector(`[data-d="${iso(t)}"]`);
+    if (nx && nx.dataset.n !== '0') { el.tabIndex = -1; nx.tabIndex = 0; nx.focus(); return; }
+  }
+});
+$('calfoot').addEventListener('click', e => {
+  if (!e.target.closest('.older')) return;
+  S.day = S.day === 'old' ? null : 'old'; S.pin = null; paint();
+});
+NARROW.addEventListener('change', () => {
+  buildCal();
+  if (S.day && S.day !== 'old' && S.day < CAL.startIso) S.day = null;
+  paint();
 });
 
 /* ---------- boot ---------- */
@@ -716,7 +767,7 @@ applyPending();
 I.forEach(x => { x.sv = {st: x.st, rc: x.rc, nt: x.nt}; });
 TOKEN = store.get('art-token');
 if (TOKEN && gh) EDIT = 'gh';
-paintHead(); buildChart(); paint();
+paintHead(); buildCal(); paint();
 if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
   fetch('api/ping').then(r => r.ok ? r.json() : null)
     .then(j => { if (j && j.ok) { EDIT = 'local'; paintHead(); paint(); } })
