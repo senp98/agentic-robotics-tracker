@@ -10,6 +10,7 @@
 import argparse
 import functools
 import json
+import re
 import webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
@@ -33,6 +34,12 @@ class Handler(SimpleHTTPRequestHandler):
             return self._send(200, {'ok': True})
         if path == '/data.js':  # 每次现算，刷新页面就能看到最新的批注
             return self._send(200, T.build_js().encode('utf-8'), 'application/javascript; charset=utf-8')
+        m = re.match(r'^/reading/([A-Za-z0-9][A-Za-z0-9._-]{0,80})\.js$', path)
+        if m:           # 批注页的数据也现算，改完 annotations/ 里的文件刷新就能看到
+            js = T.reading_js(m.group(1))
+            if js is None:
+                return self._send(404, {'ok': False, 'error': '这一篇没有批注文件'})
+            return self._send(200, js.encode('utf-8'), 'application/javascript; charset=utf-8')
         return super().do_GET()
 
     def do_POST(self):

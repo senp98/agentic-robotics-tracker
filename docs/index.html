@@ -130,6 +130,7 @@ h1{font:600 34px/1.15 var(--serif);letter-spacing:-.01em;margin:0}
 .tg.u{background:none;box-shadow:inset 0 0 0 1px #c3c9d1;color:var(--graphite)}
 .tg.v{background:none;padding:0;color:var(--graphite);font-weight:600}
 .tg.bt,.row:hover .tg.bt{background:none;box-shadow:inset 0 0 0 1px var(--graphite);color:var(--graphite);font-weight:600}
+.tg.an,.row:hover .tg.an{background:none;padding:0;color:var(--graphite);font-weight:600;text-decoration:underline;text-underline-offset:2px}
 .num{text-align:right;padding-top:4px;font-size:14px}
 .num.z{color:#aab1bb}
 .more{width:28px;height:28px;border:0;background:none;border-radius:4px;cursor:pointer;color:var(--pencil);padding:0}
@@ -235,7 +236,7 @@ dialog .err{color:#a1260d;font-size:13px;min-height:1.4em;margin:8px 0 0}
   <main class="list" id="list"></main>
   <footer class="foot">
     <p>论文元数据来自 arXiv。库内被引是这个库里有多少篇论文的参考文献引用了它；S2 被引来自 Semantic Scholar；stars 来自论文的代码仓库。新论文和这些数字每周自动更新一次。</p>
-    <p>标题链接到 alphaXiv，博客链接到原文。发表去向取自作者在 arXiv 写的备注。新收录的条目一律是未读，是否相关由关键词规则判断，会混进不相关的论文。</p>
+    <p>标题链接到 alphaXiv，博客链接到原文。带"批注 N 处"的条目另有一页，放高亮、译文、批注和总结。发表去向取自作者在 arXiv 写的备注。新收录的条目一律是未读，是否相关由关键词规则判断，会混进不相关的论文。</p>
     <p>精读清单的分批和其中每条的批注（入选理由）来自 2026 年 11 月的一轮调研，当时只读过摘要。阅读状态从全部未读开始记。</p>
   </footer>
 </div>
@@ -287,6 +288,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 const fmt = v => v == null ? '—' : v.toLocaleString('en-US');
 const href = x => x.k === 'p' ? 'https://www.alphaxiv.org/abs/' + x.i : x.l;
+const readHref = x => 'read.html?id=' + encodeURIComponent(x.i);   // 批注页：高亮、译文、批注和总结
 const gh = D.repo ? 'https://github.com/' + D.repo : '';
 
 /* 图上显示最近 12 个月，各占一列；更早的合成一列 */
@@ -391,7 +393,7 @@ function rowHtml(x) {
     `<button class="mark${x.rc > 1 ? ' n' : ''}" data-act="check" role="checkbox" aria-checked="${x.st === 2}" aria-label="${esc(x.t)}：${stText(x)}" title="${x.st === 2 ? stText(x) + '，点一下取消' : ST[x.st] + '，点一下标为已读'}">${x.rc > 1 ? x.rc : ''}</button>` +
     `<time>${x.d}</time>` +
     `<div><a class="ttl" href="${esc(href(x))}" target="_blank" rel="noopener" title="${x.k === 'p' ? '在 alphaXiv 打开' : '打开原文'}">${esc(x.t)}</a>` +
-    `<div class="meta"><span class="dt">${x.d}</span><span class="au">${esc(who)}</span>${x.v ? `<span class="tg v">${esc(x.v)}</span>` : ''}${x.bt ? `<span class="tg bt">${esc(x.bt)}</span>` : ''}${tags}</div></div>` +
+    `<div class="meta"><span class="dt">${x.d}</span><span class="au">${esc(who)}</span>${x.v ? `<span class="tg v">${esc(x.v)}</span>` : ''}${x.bt ? `<span class="tg bt">${esc(x.bt)}</span>` : ''}${x.an ? `<a class="tg an" href="${readHref(x)}" title="看这一篇的高亮、批注和总结">批注 ${x.an} 处</a>` : ''}${tags}</div></div>` +
     `<span class="num${x.c ? '' : ' z'}">${fmt(x.c)}</span><span class="num s2${x.s ? '' : ' z'}">${fmt(x.s)}</span><span class="num gh${x.r ? '' : ' z'}">${fmt(x.r)}</span>` +
     `<button class="more" data-act="toggle" aria-expanded="${open}" aria-label="${open ? '收起详情' : '展开详情'}"></button>`;
   if (open) {
@@ -407,6 +409,7 @@ function rowHtml(x) {
       (x.k === 'p'
         ? `<a class="go" href="https://www.alphaxiv.org/abs/${esc(x.i)}" target="_blank" rel="noopener">在 alphaXiv 阅读</a><a href="https://arxiv.org/abs/${esc(x.i)}" target="_blank" rel="noopener">arXiv</a><a href="https://arxiv.org/pdf/${esc(x.i)}" target="_blank" rel="noopener">PDF</a>`
         : `<a class="go" href="${esc(x.l)}" target="_blank" rel="noopener">阅读原文</a>`) +
+      (x.an ? `<a href="${readHref(x)}">高亮与批注（${x.an} 处）</a>` : '') +
       (x.p ? `<a href="https://${esc(x.p)}" target="_blank" rel="noopener">代码仓库</a>` : '') +
       `</div></div>`;
   }

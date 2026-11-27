@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>高亮与批注：Agentic Robotics 研究追踪</title>
+<meta name="description" content="一篇文章的高亮、译文、批注和总结。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='2.5' y='2.5' width='11' height='11' rx='2' fill='%23ffd93b' stroke='%23cfa400'/%3E%3C/svg%3E">
+<style>
+/* 颜色和字体与 index.html 相同。这一页里黄色是读的人自己留下的：高亮和备注。 */
+:root{
+  color-scheme:light;
+  --paper:#fff; --mist:#f4f5f7; --line:#e3e6ea; --unread:#d9dde3;
+  --pencil:#68707c; --graphite:#23272e; --marker:#ffd93b; --marker-edge:#cfa400; --marker-wash:#fff6c7;
+  --serif:"Charter","Iowan Old Style","Source Serif 4","Noto Serif","Songti SC","Noto Serif CJK SC","Source Han Serif SC",Georgia,serif;
+  --sans:"Avenir Next","Segoe UI","PingFang SC","Hiragino Sans GB","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--graphite);font:15px/1.5 var(--sans);font-variant-numeric:tabular-nums}
+.wrap{max-width:1120px;margin:0 auto;padding:0 28px}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--graphite);outline-offset:2px;border-radius:2px}
+code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:.92em;background:var(--mist);border-radius:3px;padding:1px 5px}
+
+/* masthead */
+.crumb{display:flex;flex-wrap:wrap;gap:10px 18px;justify-content:space-between;align-items:center;padding-top:22px;font-size:13.5px}
+.crumb a{color:var(--pencil);text-decoration:none}
+.crumb a:hover{text-decoration:underline}
+.tabs{display:flex;gap:2px;background:var(--mist);border-radius:5px;padding:2px}
+.tab{height:28px;padding:0 11px;border:0;border-radius:4px;background:none;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;font-size:13.5px}
+.tab[aria-pressed=true]{background:var(--paper);box-shadow:0 0 0 1px var(--line);font-weight:600}
+.tab .n{color:var(--pencil);font-weight:400}
+.top{padding:22px 0 28px}
+h1{font:600 34px/1.15 var(--serif);letter-spacing:-.01em;margin:0 0 10px;text-wrap:balance}
+.lede{max-width:70ch;margin:0;color:var(--pencil)}
+.lede b{color:var(--graphite);font-weight:600}
+.act{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-top:14px;font-size:14px}
+.act .go{background:var(--graphite);color:#fff;text-decoration:none;border-radius:4px;padding:6px 14px}
+
+/* 左边是原文的结构，右边是总结和高亮 */
+.body{display:grid;grid-template-columns:232px minmax(0,1fr);gap:0 44px;border-top:1px solid var(--line);padding:26px 0 40px}
+.lang-en .body{grid-template-columns:304px minmax(0,1fr)}
+.rail{position:sticky;top:18px;align-self:start}
+.rail h2{font:600 13px/1.4 var(--sans);margin:0 0 8px}
+.mr{display:grid;grid-template-columns:minmax(0,6.4em) 1fr 1.4em;gap:8px;align-items:center;width:100%;padding:2px 0;border:0;background:none;text-align:left;font-size:13px;line-height:1.5}
+.lang-en .mr{grid-template-columns:minmax(0,12.4em) 1fr 1.4em}
+button.mr{cursor:pointer}
+.mr .lab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mr .trk{position:relative;height:8px}
+.mr .seg{position:absolute;left:0;top:0;height:8px;border-radius:2px;background:var(--unread)}
+.mr .tk{position:absolute;top:-3px;width:3px;height:14px;margin-left:-1.5px;border-radius:1px;background:var(--marker);box-shadow:inset 0 0 0 1px var(--marker-edge)}
+.mr .n{text-align:right}
+.mr.z .lab{color:var(--pencil)}
+.mr.z .n{color:#aab1bb}
+button.mr:hover .seg{background:#bcc3cc}
+button.mr:hover .lab{text-decoration:underline;text-underline-offset:3px}
+.fnote{margin:10px 0 0;font-size:12.5px;color:var(--pencil)}
+
+/* 两栏对照：左中文，右英文 */
+.pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 32px}
+.lang-zh .pair,.lang-en .pair{grid-template-columns:minmax(0,1fr)}
+.lang-zh .en,.lang-en .zh{display:none}
+.lang-both .an-h .en,.lang-both .blk h3 .en{display:none}
+.lang-zh main,.lang-en main{max-width:43em}
+main h2{font:600 22px/1.3 var(--serif);margin:0}
+.sec + .sec{margin-top:48px}
+.sub{margin-top:22px}
+.sub h3{font:600 15px/1.4 var(--sans);margin:0 0 6px}
+
+/* 我们自己写的字用无衬线，原文和译文用衬线 */
+.prose{font-size:14.5px;line-height:1.65}
+.prose p{margin:0 0 8px}
+.prose p.lead{font-weight:600;margin:10px 0 2px}
+.prose ul{margin:0 0 8px;padding-left:1.25em}
+.prose li{margin:3px 0}
+.prose > :first-child{margin-top:0}
+.prose > :last-child{margin-bottom:0}
+.prose a{text-underline-offset:2px}
+.who{display:inline-block;margin-right:6px;padding:0 6px;border-radius:3px;font-size:12px;font-weight:600;line-height:1.55;white-space:nowrap;vertical-align:1px}
+.who.me{background:var(--marker);box-shadow:inset 0 0 0 1px var(--marker-edge)}
+.who.cl{background:var(--mist);box-shadow:inset 0 0 0 1px #c3c9d1}
+
+/* 一处高亮 */
+.ann-h{display:flex;flex-wrap:wrap;gap:10px 18px;justify-content:space-between;align-items:center;margin-bottom:14px}
+.an{padding:20px 0 24px;border-top:1px solid var(--line);scroll-margin-top:10px}
+.an-h{display:flex;gap:4px 12px;flex-wrap:wrap;align-items:baseline;margin-bottom:10px;font-size:13px;color:var(--pencil)}
+.aid{font-weight:600;color:var(--graphite);text-decoration:none}
+.aid:hover{text-decoration:underline}
+.an-h .src{margin-left:auto;white-space:nowrap}
+.q{font:400 16.5px/1.75 var(--serif)}
+.q p{margin:0 0 8px}
+.q p:last-child{margin:0}
+.q .en .hl,.lang-zh .q .zh .hl{background:linear-gradient(transparent 70%,var(--marker) 70%,var(--marker) 91%,transparent 91%);box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.blk{margin-top:14px;padding:10px 14px 12px;border-left:3px solid #bcc3cc;border-radius:0 4px 4px 0;background:var(--mist)}
+.blk.me{border-color:var(--marker);background:var(--marker-wash)}
+.blk h3{font:600 13px/1.4 var(--sans);margin:0 0 6px}
+.empty{padding:28px 0;color:var(--pencil)}
+.lnk{border:0;background:none;padding:0;text-decoration:underline;cursor:pointer}
+.flash{animation:flash 1.6s}
+@keyframes flash{from{background:var(--marker-wash);box-shadow:-12px 0 0 var(--marker-wash),12px 0 0 var(--marker-wash)}}
+
+.foot{border-top:1px solid var(--line);padding:22px 0 60px;color:var(--pencil);font-size:13px;max-width:78ch}
+.foot p{margin:0 0 6px}
+.msg{padding:40px 0;max-width:60ch}
+
+@media (max-width:1000px){
+  .body,.lang-en .body{grid-template-columns:minmax(0,1fr)}
+  .rail{position:static;max-width:440px;margin-bottom:34px}
+}
+@media (max-width:720px){
+  .wrap{padding:0 16px}
+  h1{font-size:27px}
+  .pair{grid-template-columns:minmax(0,1fr)}
+  .pair > .en{margin-top:10px}
+  .sub .pair:first-child > .en{margin-top:0;color:var(--pencil);font-weight:400}
+  .an-h .src{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){.flash{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <nav class="crumb">
+    <a href="./">返回研究追踪</a>
+    <div class="tabs" id="lang" role="group" aria-label="显示哪种语言"></div>
+  </nav>
+  <header class="top">
+    <h1 id="ttl"></h1>
+    <p class="lede" id="lede"></p>
+    <p class="act" id="act"></p>
+  </header>
+  <div class="body">
+    <aside class="rail" id="rail" aria-label="原文结构和高亮的位置"></aside>
+    <main>
+      <div id="secs"></div>
+      <section class="sec" id="ann">
+        <div class="ann-h">
+          <h2 id="ann-t"></h2>
+          <div class="tabs" id="flt" role="group" aria-label="筛选高亮"></div>
+        </div>
+        <div id="list"></div>
+      </section>
+    </main>
+  </div>
+  <footer class="foot">
+    <p>英文是原文的摘录，中文是译文，版权属于原作者。完整内容请读原文。</p>
+    <p>黄色底的是读的人自己的备注，灰色底的是 Claude 的解读。解读里写明是推断的内容，不是原文的说法。</p>
+  </footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+};
+function fail(html) { $('app').innerHTML = `<p class="msg">${html}</p>`; }
+
+const id = new URLSearchParams(location.search).get('id') || '';
+if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,80}$/.test(id)) {
+  fail('没有指定要看哪一篇。<a href="./">回到研究追踪</a>，点条目下面的"批注"。');
+} else {
+  const s = document.createElement('script');
+  s.src = 'reading/' + id + '.js';
+  s.onload = () => window.READING_DATA ? boot(window.READING_DATA) : fail('批注数据读不出来。');
+  s.onerror = () => fail(`这一篇还没有批注页。批注写在仓库的 <code>annotations/${esc(id)}.md</code> 里。<a href="./">回到研究追踪</a>`);
+  document.head.appendChild(s);
+}
+
+function boot(D) {
+  const E = D.entries.slice().sort((a, b) => (a.p == null ? 1e9 : a.p) - (b.p == null ? 1e9 : b.p) || a.id.localeCompare(b.id));
+  const ids = new Set(E.map(e => e.id));
+  const S = {lang: ['both', 'zh', 'en'].includes(store.get('art-lang')) ? store.get('art-lang') : 'both', f: 'all'};
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- 很小的一部分 Markdown：段落、列表、加粗、行内代码、链接 ---------- */
+  function inline(s) {
+    return esc(s)
+      .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+      .replace(/\bA\d{3}\b/g, m => ids.has(m) ? `<a href="#${m}">${m}</a>` : m);   // 条目编号链接到那一条
+  }
+  function md(src) {
+    const out = [];
+    let para = [], list = [];
+    const flush = () => {
+      if (para.length) {
+        const t = para.join(' ');
+        const lab = t.match(/^([^：:，,。.\s][^：:，,。.]{0,11})([：:])\s*(\S.*)$/);   // "判断：……" 这样的开头加粗
+        out.push(/[：:]$/.test(t) ? `<p class="lead">${inline(t)}</p>`
+          : lab ? `<p><b>${inline(lab[1])}</b>${lab[2]}${lab[2] === ':' ? ' ' : ''}${inline(lab[3])}</p>`
+          : `<p>${inline(t)}</p>`);
+        para = [];
+      }
+      if (list.length) {
+        out.push('<ul>' + list.map(x => {
+          // 列表项开头的加粗是"谁说的"：我的判断、Claude 的推断
+          const h = inline(x).replace(/^<b>([^<]+)<\/b>\s*/, (m, w) => `<span class="who ${/^(我|My)/.test(w) ? 'me' : 'cl'}">${w}</span>`);
+          return `<li>${h}</li>`;
+        }).join('') + '</ul>');
+        list = [];
+      }
+    };
+    for (const line of (src || '').split('\n')) {
+      const li = line.match(/^[-*]\s+(.*)$/);
+      if (!line.trim()) flush();
+      else if (li) { if (para.length) flush(); list.push(li[1]); }
+      else { if (list.length) flush(); para.push(line.trim()); }
+    }
+    flush();
+    return out.join('');
+  }
+  const quote = s => (s || '').split(/\n\s*\n/).map(p => `<p><span class="hl">${esc(p.replace(/\n/g, ' '))}</span></p>`).join('');
+  const pair = (zh, en, cls) => `<div class="pair${cls ? ' ' + cls : ''}"><div class="zh">${zh}</div><div class="en" lang="en">${en}</div></div>`;
+
+  /* ---------- 原文结构：每一节一条，条的长度是篇幅，黄色标记是高亮的位置 ---------- */
+  const O = D.outline.map((o, i) => ({pos: o[0], end: i + 1 < D.outline.length ? D.outline[i + 1][0] : 100, en: o[1], zh: o[2], es: []}));
+  for (const e of E) {
+    const o = e.p == null ? null : O.filter(o => e.p >= o.pos).pop();
+    if (o) o.es.push(e);
+  }
+  function paintRail() {
+    if (!O.length) { $('rail').hidden = true; return; }
+    const longest = Math.max(...O.map(o => o.end - o.pos));
+    const en = S.lang === 'en';
+    const rows = O.map((o, i) => {
+      const w = (o.end - o.pos) / longest * 100, name = en ? o.en : o.zh, n = o.es.length;
+      const ticks = o.es.map(e => `<i class="tk" style="left:${((e.p - o.pos) / (o.end - o.pos) * w).toFixed(1)}%"></i>`).join('');
+      const inner = `<span class="lab">${esc(name)}</span><span class="trk"><i class="seg" style="width:${w.toFixed(1)}%"></i>${ticks}</span><span class="n">${n || '—'}</span>`;
+      return n
+        ? `<button class="mr" data-o="${i}" title="${esc(o.zh)}（${esc(o.en)}）：${n} 处高亮，点一下跳过去">${inner}</button>`
+        : `<div class="mr z" title="${esc(o.zh)}（${esc(o.en)}）：还没有高亮">${inner}</div>`;
+    }).join('');
+    const blank = O.filter(o => !o.es.length).length;
+    $('rail').innerHTML = `<h2>高亮在原文里的位置</h2>${rows}` +
+      `<p class="fnote">灰条的长度是这一节在原文里的篇幅，黄色标记是高亮的位置。${blank ? `${O.length} 节里有 ${blank} 节还没有高亮。` : ''}</p>`;
+  }
+
+  /* ---------- 总结 ---------- */
+  function paintSecs() {
+    $('secs').innerHTML = D.sections.map(sec =>
+      `<section class="sec"><h2>${esc(sec.h)}</h2>` + sec.subs.map(s =>
+        `<div class="sub"><div class="pair"><h3 class="zh">${esc(s.zh)}</h3><h3 class="en" lang="en">${esc(s.en || s.zh)}</h3></div>` +
+        pair(md(s.bz), md(s.be), 'prose') + `</div>`).join('') + `</section>`).join('');
+  }
+
+  /* ---------- 高亮 ---------- */
+  const has = {all: () => true, me: e => e.nz || e.ne, cl: e => e.iz || e.ie};
+  function paintList() {
+    const n = {all: E.length, me: E.filter(has.me).length, cl: E.filter(has.cl).length};
+    $('ann-t').textContent = '高亮与批注';
+    $('flt').innerHTML = [['all', '全部'], ['me', '有我的备注'], ['cl', '有解读']]
+      .map(([k, lab]) => `<button class="tab" data-f="${k}" aria-pressed="${S.f === k}">${lab}<span class="n">${n[k]}</span></button>`).join('');
+    const list = E.filter(has[S.f]);
+    if (!list.length) {
+      $('list').innerHTML = E.length
+        ? '<p class="empty">这个筛选下没有条目。<button class="lnk" data-f="all">看全部</button></p>'
+        : '<p class="empty">这一篇还没有高亮。</p>';
+      return;
+    }
+    $('list').innerHTML = list.map(e =>
+      `<article class="an" id="${esc(e.id)}">` +
+      `<header class="an-h"><a class="aid" href="#${esc(e.id)}">${esc(e.id)}</a>` +
+      `<span class="zh">${esc(e.sz || e.se)}</span><span class="en" lang="en">${esc(e.se || e.sz)}</span>` +
+      (e.l ? `<a class="src" href="${esc(e.l)}" target="_blank" rel="noopener">在原文里看这一节</a>` : '') + `</header>` +
+      pair(quote(e.zh), quote(e.en), 'q') +
+      (e.nz || e.ne ? `<div class="blk me"><h3><span class="zh">我的备注</span><span class="en" lang="en">My note</span></h3>${pair(md(e.nz), md(e.ne), 'prose')}</div>` : '') +
+      (e.iz || e.ie ? `<div class="blk cl"><h3><span class="zh">Claude 的解读</span><span class="en" lang="en">Claude's interpretation</span></h3>${pair(md(e.iz), md(e.ie), 'prose')}</div>` : '') +
+      `</article>`).join('');
+  }
+
+  /* ---------- 页头 ---------- */
+  function paintHead() {
+    document.title = D.t + '：高亮与批注';
+    document.body.className = 'lang-' + S.lang;
+    $('ttl').textContent = D.t;
+    const nMe = E.filter(has.me).length, nCl = E.filter(has.cl).length;
+    $('lede').innerHTML = [D.a, D.pd ? D.pd + ' 发布' : ''].filter(Boolean).map(esc).join('，') + '。' +
+      `<b>${E.length}</b> 处高亮` + (nMe ? `，<b>${nMe}</b> 处有我的备注` : '') + (nCl ? `，<b>${nCl}</b> 处有 Claude 的解读` : '') + '。' +
+      (D.rc ? `读过 <b>${D.rc}</b> 遍。` : '') + (D.updated ? `批注更新于 ${esc(D.updated)}。` : '');
+    $('act').innerHTML = (D.l ? `<a class="go" href="${esc(D.l)}" target="_blank" rel="noopener">${D.k === 'p' ? '在 alphaXiv 阅读' : '阅读原文'}</a>` : '') +
+      (D.repo ? `<a href="https://github.com/${esc(D.repo)}/edit/${esc(D.branch)}/annotations/${esc(D.i)}.md" target="_blank" rel="noopener">在 GitHub 上编辑批注</a>` : '');
+    $('lang').innerHTML = [['both', '对照'], ['zh', '中文'], ['en', 'English']]
+      .map(([k, lab]) => `<button class="tab" data-lang="${k}" aria-pressed="${S.lang === k}">${lab}</button>`).join('');
+  }
+
+  /* 跳到某一条：被筛选藏起来的先放出来 */
+  function go(eid, smooth) {
+    if (!ids.has(eid)) return;
+    if (!$(eid)) { S.f = 'all'; paintList(); }
+    const el = $(eid);
+    el.scrollIntoView({block: 'start', behavior: smooth && !calm ? 'smooth' : 'auto'});
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  }
+
+  $('lang').addEventListener('click', e => {
+    const b = e.target.closest('[data-lang]'); if (!b) return;
+    S.lang = b.dataset.lang; store.set('art-lang', S.lang); paintHead(); paintRail();
+  });
+  $('ann').addEventListener('click', e => {
+    const b = e.target.closest('[data-f]'); if (!b) return;
+    S.f = b.dataset.f; paintList();
+  });
+  $('rail').addEventListener('click', e => {
+    const b = e.target.closest('[data-o]'); if (!b) return;
+    const first = O[+b.dataset.o].es[0];
+    history.replaceState(null, '', '#' + first.id); go(first.id, true);
+  });
+  window.addEventListener('hashchange', () => go(decodeURIComponent(location.hash.slice(1)), true));
+
+  paintHead(); paintRail(); paintSecs(); paintList();
+  if (location.hash) go(decodeURIComponent(location.hash.slice(1)), false);
+}
+</script>
+</body>
+</html>

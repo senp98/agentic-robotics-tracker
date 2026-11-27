@@ -1,5 +1,6 @@
 # 构建产物：由 scripts/build.py 生成，线上由 GitHub Actions 现场构建
 docs/data.js
+docs/reading/
 # 更新脚本下载的论文全文，只在本机用
 .cache/
 __pycache__/

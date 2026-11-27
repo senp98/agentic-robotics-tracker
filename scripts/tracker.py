@@ -8,7 +8,9 @@ import re
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, 'data')
 NOTES = os.path.join(ROOT, 'notes')
+ANNOT = os.path.join(ROOT, 'annotations')
 DOCS = os.path.join(ROOT, 'docs')
+READING = os.path.join(DOCS, 'reading')
 STATUS = ['unread', 'queue', 'read']  # 页面上显示为 未读 / 待读 / 已读
 ID_RE = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._-]{0,80}$')
 
@@ -273,6 +275,114 @@ def write_note(pid, status=None, body=None, reads=None):
         f.write('---\n' + '\n'.join(head) + '\n---\n' + (note['body'] + '\n' if note['body'] else ''))
 
 
+# ---------------------------------------------------------------- 批注页
+# annotations/<id>.md 是一篇文章的高亮和长批注，格式见 README。页面是 docs/read.html?id=<id>。
+ANN_KEYS = {'中文': 'zh', 'EN': 'en', '备注': 'nz', 'Note': 'ne', '解读': 'iz', 'Interpretation': 'ie'}
+
+
+def _labelled(text):
+    """按单独成行的 **中文**、**EN** 这类标签切开 -> (标签之前的文字, {键: 文字})。"""
+    pre, out, cur = [], {}, None
+    for line in text.split('\n'):
+        m = re.match(r'^\*\*([^*]+)\*\*\s*$', line)
+        if m and m.group(1).strip() in ANN_KEYS:
+            cur = ANN_KEYS[m.group(1).strip()]
+            out[cur] = []
+        elif cur is None:
+            pre.append(line)
+        else:
+            out[cur].append(line)
+    return '\n'.join(pre), {k: '\n'.join(v).strip('\n') for k, v in out.items()}
+
+
+def _unquote(text):
+    """去掉引用块每行开头的 '> '。"""
+    return '\n'.join(re.sub(r'^>\s?', '', line) for line in text.split('\n')).strip('\n')
+
+
+def annotated_ids():
+    if not os.path.isdir(ANNOT):
+        return []
+    return sorted(f[:-3] for f in os.listdir(ANNOT) if f.endswith('.md') and ID_RE.match(f[:-3]))
+
+
+def read_annotations(pid):
+    """annotations/<id>.md -> {'created', 'updated', 'outline', 'sections', 'entries'}；没有文件返回 None。
+    outline：[位置, 英文名, 中文名]，位置是这一节的开头在原文里的百分比。
+    sections：总结这类成段的文字，每个小节有中英两栏。
+    entries：一处高亮一条，带原文、译文，以及可选的备注和解读。"""
+    p = os.path.join(ANNOT, pid + '.md')
+    if not ID_RE.match(pid) or not os.path.exists(p):
+        return None
+    with open(p, encoding='utf-8') as f:
+        txt = re.sub(r'(?s)<!--.*?-->', '', f.read().replace('\r\n', '\n'))
+    out = {'created': '', 'updated': '', 'outline': [], 'sections': [], 'entries': []}
+    if txt.startswith('---\n'):
+        end = txt.find('\n---', 3)
+        if end > 0:
+            for line in txt[4:end].split('\n'):
+                k, _, v = line.partition(':')
+                if k.strip() in ('created', 'updated'):
+                    out[k.strip()] = v.strip()
+            txt = txt[end + 4:]
+    parts = re.split(r'(?m)^##[ \t]+(.+?)[ \t]*$', txt)
+    for head, body in zip(parts[1::2], parts[2::2]):
+        if re.match(r'^A\d+$', head):
+            pre, blk = _labelled(body)
+            meta = dict(re.findall(r'(?m)^-[ \t]*(\w+):[ \t]*(.*?)[ \t]*$', pre))
+            sec = re.match(r'^(.*?)（(.*)）$', meta.get('section', ''))
+            e = {'id': head, 'se': sec.group(1).strip() if sec else meta.get('section', ''),
+                 'sz': sec.group(2).strip() if sec else '', 'l': meta.get('link', ''), 'd': meta.get('added', '')}
+            try:
+                e['p'] = float(meta['pos'])
+            except (KeyError, ValueError):
+                e['p'] = None
+            for k in ('en', 'zh'):
+                e[k] = _unquote(blk.get(k, ''))
+            for k in ('nz', 'ne', 'iz', 'ie'):
+                if blk.get(k):
+                    e[k] = blk[k]
+            out['entries'].append(e)
+        elif head == '原文结构':
+            for m in re.finditer(r'(?m)^-[ \t]*([\d.]+)[ \t]*\|[ \t]*(.*?)[ \t]*\|[ \t]*(.*?)[ \t]*$', body):
+                out['outline'].append([float(m.group(1)), m.group(2), m.group(3)])
+        else:
+            subs = re.split(r'(?m)^###[ \t]+(.+?)[ \t]*$', body)
+            sec = {'h': head, 'subs': []}
+            for title, sub in zip(subs[1::2], subs[2::2]):
+                zh, _, en = title.partition('|')
+                blk = _labelled(sub)[1]
+                sec['subs'].append({'zh': zh.strip(), 'en': en.strip(), 'bz': blk.get('zh', ''), 'be': blk.get('en', '')})
+            out['sections'].append(sec)
+    out['outline'].sort()
+    return out
+
+
+def build_reading(pid, papers=None):
+    """批注页读的数据：批注文件加上这一条在库里的标题、日期、链接和阅读状态。"""
+    ann = read_annotations(pid)
+    if ann is None:
+        return None
+    p = next((x for x in (papers if papers is not None else load_papers()) if x['id'] == pid), {})
+    note = read_note(pid) or {}
+    site = load_sources().get('site', {})
+    ann.update({
+        'i': pid, 'k': 'b' if p.get('type') == 'blog' else 'p', 't': clean_title(p.get('title', pid)),
+        'pd': p.get('date', ''), 'a': '、'.join(p.get('authors') or []),
+        'l': p.get('url') or ('https://www.alphaxiv.org/abs/' + pid if p else ''),
+        'st': STATUS.index(note.get('status', 'unread')), 'rc': note.get('reads', 0),
+        'repo': site.get('repo', ''), 'branch': site.get('branch', 'main'),
+    })
+    return ann
+
+
+def reading_js(pid, papers=None):
+    data = build_reading(pid, papers)
+    if data is None:
+        return None
+    return 'window.READING_DATA=' + json.dumps(data, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/') + ';\n'
+
+
 # ---------------------------------------------------------------- 合成页面数据
 def build_data():
     site = load_sources().get('site', {})
@@ -281,6 +391,9 @@ def build_data():
     tags = [name for name, _ in TOPICS]
     items = []
     asof = sig.get('updated', '')
+    noted = {}   # 有批注页的条目 -> 高亮条数
+    for pid in annotated_ids():
+        noted[pid] = len(read_annotations(pid)['entries'])
     for p in load_papers():
         if p['id'] in ignore:
             continue
@@ -307,6 +420,8 @@ def build_data():
         }
         if p.get('url'):
             it['l'] = p['url']
+        if p['id'] in noted:
+            it['an'] = noted[p['id']]
         items.append(it)
         asof = max(asof, p.get('added', ''))
     items.sort(key=lambda x: x['d'], reverse=True)
@@ -331,4 +446,15 @@ def build():
     js = build_js()
     with open(os.path.join(DOCS, 'data.js'), 'w', encoding='utf-8') as f:
         f.write(js)
+    # 每个批注文件一份 docs/reading/<id>.js；批注文件删掉了的，对应的旧文件也删掉
+    os.makedirs(READING, exist_ok=True)
+    papers = load_papers()
+    keep = set()
+    for pid in annotated_ids():
+        keep.add(pid + '.js')
+        with open(os.path.join(READING, pid + '.js'), 'w', encoding='utf-8') as f:
+            f.write(reading_js(pid, papers))
+    for name in os.listdir(READING):
+        if name.endswith('.js') and name not in keep:
+            os.remove(os.path.join(READING, name))
     return len(js)
